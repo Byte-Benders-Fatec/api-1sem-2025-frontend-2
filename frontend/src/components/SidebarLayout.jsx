@@ -11,6 +11,7 @@ import {
   ListTodo,
   CheckSquare,
   Banknote,
+  Compass,
   FileText
 } from 'lucide-react'
 
@@ -72,6 +73,9 @@ export default function SidebarLayout() {
           </Link>
           <Link to="/agencies" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
             <Banknote className="w-5 h-5" /> <span>Agências</span>
+          </Link>
+          <Link to="/areas" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
+            <Compass className="w-5 h-5" /> <span>Áreas</span>
           </Link>
           <Link to="/documents" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
             <FileText className="w-5 h-5" /> <span>Documentos</span>

@@ -2,59 +2,60 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 
-export default function TeamsListPage() {
-
+export default function AreasListPage() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-  const [teams, setTeams] = useState([])
+  const [areas, setAreas] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
 
   const token = localStorage.getItem('token')
 
-  const fetchTeams = async () => {
+  const fetchAreas = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/teams`, {
+      const response = await axios.get(`${API_BASE_URL}/areas`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setTeams(response.data)
+      setAreas(response.data)
       setFiltered(response.data)
     } catch (err) {
-      setError('Erro ao carregar times')
+      setError('Erro ao carregar áreas')
       console.error(err)
     }
   }
 
   useEffect(() => {
-    fetchTeams()
+    fetchAreas()
   }, [])
 
   const handleSearch = (text) => {
     setSearch(text)
-    const results = teams.filter(t => t.name.toLowerCase().includes(text.toLowerCase()))
+    const results = areas.filter(a =>
+      a.name.toLowerCase().includes(text.toLowerCase())
+    )
     setFiltered(results)
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este time?')) return
+    if (!window.confirm('Tem certeza que deseja excluir esta área?')) return
     try {
-      await axios.delete(`${API_BASE_URL}/teams/${id}`, {
+      await axios.delete(`${API_BASE_URL}/areas/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      fetchTeams()
+      fetchAreas()
     } catch (err) {
       console.error(err)
-      alert('Erro ao excluir time.')
+      alert('Erro ao excluir área.')
     }
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-green-700">Times</h2>
+        <h2 className="text-xl font-bold text-green-700">Áreas</h2>
         <Link
-          to="/teams/create"
+          to="/areas/create"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           + Criar Novo
@@ -81,26 +82,26 @@ export default function TeamsListPage() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((team) => (
-            <tr key={team.id}>
-              <td className="p-2 border-b">{team.name}</td>
-              <td className="p-2 border-b">{team.description}</td>
-              <td className="p-2 border-b">{team.is_active ? 'Sim' : 'Não'}</td>
+          {filtered.map((area) => (
+            <tr key={area.id}>
+              <td className="p-2 border-b">{area.name}</td>
+              <td className="p-2 border-b">{area.description}</td>
+              <td className="p-2 border-b">{area.is_active ? 'Sim' : 'Não'}</td>
               <td className="p-2 border-b space-x-2">
                 <Link
-                  to={`/teams/${team.id}/view`}
+                  to={`/areas/${area.id}/view`}
                   className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                 >
                   Visualizar
                 </Link>
                 <Link
-                  to={`/teams/${team.id}/edit`}
+                  to={`/areas/${area.id}/edit`}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                 >
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(team.id)}
+                  onClick={() => handleDelete(area.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir

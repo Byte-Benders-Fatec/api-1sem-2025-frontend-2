@@ -33,6 +33,11 @@ import TasksCreatePage from './pages/TasksCreatePage'
 import TasksEditPage from './pages/TasksEditPage'
 import TasksViewPage from './pages/TasksViewPage'
 
+import AreasListPage from './pages/AreasListPage'
+import AreasCreatePage from './pages/AreasCreatePage'
+import AreasEditPage from './pages/AreasEditPage'
+import AreasViewPage from './pages/AreasViewPage'
+
 import DocumentsListPage from './pages/DocumentsListPage'
 import DocumentsUploadPage from './pages/DocumentsUploadPage'
 import DocumentsEditPage from './pages/DocumentsEditPaga'
@@ -86,6 +91,11 @@ export default function App() {
           <Route path="tasks/:id/edit" element={<TasksEditPage />} />
           <Route path="tasks/create" element={<TasksCreatePage />} />
           <Route path="tasks" element={<TasksListPage />} />
+
+          <Route path="areas/:id/view" element={<AreasViewPage />} />
+          <Route path="areas/:id/edit" element={<AreasEditPage />} />
+          <Route path="areas/create" element={<AreasCreatePage />} />
+          <Route path="areas" element={<AreasListPage />} />
 
           <Route path="documents/:id/edit" element={<DocumentsEditPage />} />
           <Route path="documents/upload" element={<DocumentsUploadPage />} />
