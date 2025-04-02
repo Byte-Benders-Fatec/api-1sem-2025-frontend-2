@@ -91,7 +91,7 @@ export default function ProjectViewPage() {
         </div>
 
         <div>
-          <label className="block font-medium text-gray-700">Orçamento (R$)</label>
+          <label className="block font-medium text-gray-700">Orçamento Total (R$)</label>
           <input type="number" step="0.01" className="w-full p-2 border rounded bg-gray-100" value={budget} readOnly />
         </div>
 

@@ -145,7 +145,7 @@ export default function ProjectEditPage() {
         </div>
 
         <div>
-          <label className="block font-medium text-gray-700">Orçamento (R$)</label>
+          <label className="block font-medium text-gray-700">Orçamento Total (R$)</label>
           <input type="number" step="0.01" className="w-full p-2 border rounded" value={budget} onChange={(e) => setBudget(e.target.value)} />
         </div>
 

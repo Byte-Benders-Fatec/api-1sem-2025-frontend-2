@@ -79,7 +79,7 @@ export default function ActivitiesListPage() {
             <th className="text-left p-2 border-b">Nome</th>
             <th className="text-left p-2 border-b">Projeto</th>
             <th className="text-left p-2 border-b">Status</th>
-            <th className="text-left p-2 border-b">Orçamento</th>
+            <th className="text-left p-2 border-b">Orçamento da Atividade</th>
             <th className="text-left p-2 border-b">Período</th>
             <th className="text-left p-2 border-b">Ativo</th>
             <th className="text-left p-2 border-b">Ações</th>

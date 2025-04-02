@@ -128,7 +128,7 @@ export default function ActivityCreatePage() {
         </div>
 
         <div>
-          <label className="block font-medium text-gray-700">Orçamento (R$)</label>
+          <label className="block font-medium text-gray-700">Orçamento da Atividade (R$)</label>
           <input
             type="number"
             step="0.01"
