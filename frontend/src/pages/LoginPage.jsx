@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
-  const [step, setStep] = useState(1) // 1 = login, 2 = código 2FA
+  const [step, setStep] = useState(1) // 1 = login, 2 = código OTP
   const [loginToken, setLoginToken] = useState(null)
   const [error, setError] = useState(null)
 
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <p className="text-gray-700">Digite o código de verificação enviado por e-mail.</p>
           <input
             type="text"
-            placeholder="Código 2FA"
+            placeholder="Código OTP"
             className="w-full p-2 border border-gray-300 rounded text-center"
             value={code}
             onChange={(e) => setCode(e.target.value)}
