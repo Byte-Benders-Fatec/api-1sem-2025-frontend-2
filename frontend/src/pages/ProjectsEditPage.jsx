@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import Modal from '../components/Modal'
+import DocumentUploadForm from '../components/DocumentUploadForm'
 
 export default function ProjectEditPage() {
-
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const { id } = useParams()
@@ -22,8 +23,11 @@ export default function ProjectEditPage() {
   const [isActive, setIsActive] = useState(true)
   const [error, setError] = useState(null)
 
+  const [documents, setDocuments] = useState([])
+  const [showModal, setShowModal] = useState(false)
+
   useEffect(() => {
-    const fetchProjectAndAgencies = async () => {
+    const fetchData = async () => {
       try {
         const [projectRes, agenciesRes] = await Promise.all([
           axios.get(`${API_BASE_URL}/projects/${id}`, {
@@ -51,8 +55,20 @@ export default function ProjectEditPage() {
       }
     }
 
-    fetchProjectAndAgencies()
+    fetchData()
+    refreshDocuments()
   }, [id, token])
+
+  const refreshDocuments = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/documents?project_id=${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setDocuments(res.data)
+    } catch (err) {
+      console.error('Erro ao buscar documentos:', err)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -159,25 +175,59 @@ export default function ProjectEditPage() {
         </div>
 
         <div className="flex space-x-12 mt-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            ← Voltar
+          </button>
 
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-                ← Voltar
-            </button>
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
 
-            <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-                Salvar Alterações
-            </button>
-
+      {/* Documentos vinculados */}
+      <div className="mt-10 border-t pt-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-green-700">Documentos do Projeto</h3>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+          >
+            + Adicionar Documento
+          </button>
         </div>
 
-      </form>
+        <ul className="space-y-2">
+          {documents.map((doc) => (
+            <li key={doc.id} className="flex justify-between items-center bg-gray-100 p-2 rounded">
+              <span>{doc.name}</span>
+              <a
+                href={`${API_BASE_URL}/documents/${doc.id}/download`}
+                className="text-blue-600 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Adicionar Documento">
+        <DocumentUploadForm
+          projectId={id}
+          onClose={() => setShowModal(false)}
+          onUploadSuccess={refreshDocuments}
+        />
+      </Modal>
     </div>
   )
 }
