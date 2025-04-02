@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { formatCNPJ } from '../utils/formatters'
 
-export default function AgencyEditPage() {
+export default function InstitutionsEditPage() {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -19,25 +19,25 @@ export default function AgencyEditPage() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchAgency = async () => {
+    const fetchInstitution = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/agencies/${id}`, {
+        const res = await axios.get(`${API_BASE_URL}/institutions/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
-        const agency = res.data
-        setName(agency.name)
-        setAcronym(agency.acronym)
-        setCnpj(agency.cnpj)
-        setWebsite(agency.website || '')
-        setIsActive(agency.is_active === 1)
+        const institution = res.data
+        setName(institution.name)
+        setAcronym(institution.acronym)
+        setCnpj(institution.cnpj)
+        setWebsite(institution.website || '')
+        setIsActive(institution.is_active === 1)
       } catch (err) {
         console.error(err)
-        setError('Erro ao carregar dados da agência.')
+        setError('Erro ao carregar dados da instituição.')
       }
     }
 
-    fetchAgency()
+    fetchInstitution()
   }, [id, token])
 
   const handleSubmit = async (e) => {
@@ -53,19 +53,19 @@ export default function AgencyEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/agencies/${id}`, payload, {
+      await axios.put(`${API_BASE_URL}/institutions/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      navigate('/agencies')
+      navigate('/institutions')
     } catch (err) {
       console.error(err)
-      setError('Erro ao atualizar agência.')
+      setError('Erro ao atualizar instituição.')
     }
   }
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-green-700 mb-4">Editar Agência Financiadora</h2>
+      <h2 className="text-xl font-bold text-green-700 mb-4">Editar Instituição</h2>
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
       <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
@@ -118,24 +118,24 @@ export default function AgencyEditPage() {
             checked={isActive}
             onChange={(e) => setIsActive(e.target.checked)}
           />
-          <label className="text-gray-700">Agência ativa</label>
+          <label className="text-gray-700">Instituição ativa</label>
         </div>
 
         <div className="flex space-x-12 mt-6">
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-                ← Voltar
-            </button>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            ← Voltar
+          </button>
 
-            <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-                Salvar Alterações
-            </button>
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Salvar Alterações
+          </button>
         </div>
       </form>
     </div>

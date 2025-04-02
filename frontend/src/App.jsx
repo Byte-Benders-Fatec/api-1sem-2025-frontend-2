@@ -42,6 +42,11 @@ import DocumentsListPage from './pages/DocumentsListPage'
 import DocumentsUploadPage from './pages/DocumentsUploadPage'
 import DocumentsEditPage from './pages/DocumentsEditPaga'
 
+import InstitutionsListPage from './pages/InstitutionsListPage'
+import InstitutionsCreatePage from './pages/InstitutionsCreatePage'
+import InstitutionsEditPage from './pages/InstitutionsEditPage'
+import InstitutionsViewPage from './pages/InstitutionsViewPage'
+
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
   return token ? children : <Navigate to="/" />
@@ -100,6 +105,11 @@ export default function App() {
           <Route path="documents/:id/edit" element={<DocumentsEditPage />} />
           <Route path="documents/upload" element={<DocumentsUploadPage />} />
           <Route path="documents" element={<DocumentsListPage />} />
+
+          <Route path="institutions/:id/view" element={<InstitutionsViewPage />} />
+          <Route path="institutions/:id/edit" element={<InstitutionsEditPage />} />
+          <Route path="institutions/create" element={<InstitutionsCreatePage />} />
+          <Route path="institutions" element={<InstitutionsListPage />} />
 
         </Route>
       </Routes>

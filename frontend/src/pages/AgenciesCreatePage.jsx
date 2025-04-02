@@ -90,7 +90,6 @@ export default function AgenciesCreatePage() {
         </div>
 
         <div className="flex space-x-12 mt-6">
-
             <button
                 type="button"
                 onClick={() => navigate(-1)}
@@ -105,9 +104,7 @@ export default function AgenciesCreatePage() {
             >
                 Criar
             </button>
-
         </div>
-
       </form>
     </div>
   )
