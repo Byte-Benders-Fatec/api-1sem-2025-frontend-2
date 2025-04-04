@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function AreasListPage() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -37,18 +39,11 @@ export default function AreasListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta área?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/areas/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchAreas()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir área.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'areas',
+    token: token,
+    onSuccess: fetchAreas
+  })
 
   return (
     <div>
@@ -101,7 +96,7 @@ export default function AreasListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(area.id)}
+                  onClick={() => openConfirmModal(area.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -111,6 +106,13 @@ export default function AreasListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir esta área?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

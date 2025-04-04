@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function ProjectsListPage() {
 
@@ -37,18 +39,11 @@ export default function ProjectsListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Deseja realmente excluir este projeto?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/projects/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchProjects()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir projeto.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'projects',
+    token: token,
+    onSuccess: fetchProjects
+  })
 
   return (
     <div>
@@ -103,7 +98,7 @@ export default function ProjectsListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(project.id)}
+                  onClick={() => openConfirmModal(project.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -113,6 +108,13 @@ export default function ProjectsListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este projeto?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

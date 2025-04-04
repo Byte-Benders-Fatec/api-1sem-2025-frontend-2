@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function DocumentsListPage() {
 
@@ -37,18 +39,11 @@ export default function DocumentsListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Deseja excluir este documento?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/documents/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchDocuments()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir documento.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'documents',
+    token: token,
+    onSuccess: fetchDocuments
+  })
 
   return (
     <div>
@@ -109,7 +104,7 @@ export default function DocumentsListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(doc.id)}
+                  onClick={() => openConfirmModal(doc.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -119,6 +114,13 @@ export default function DocumentsListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este documento?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

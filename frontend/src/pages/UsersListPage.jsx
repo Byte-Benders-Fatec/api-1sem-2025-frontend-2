@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function UsersListPage() {
 
@@ -40,18 +42,11 @@ export default function UsersListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Deseja realmente excluir este usuário?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchUsers()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir usuário.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'users',
+    token: token,
+    onSuccess: fetchUsers
+  })
 
   return (
     <div>
@@ -104,7 +99,7 @@ export default function UsersListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(user.id)}
+                  onClick={() => openConfirmModal(user.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -114,6 +109,13 @@ export default function UsersListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este usuário?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

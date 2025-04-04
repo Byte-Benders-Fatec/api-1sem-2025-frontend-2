@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function TasksListPage() {
 
@@ -37,18 +39,11 @@ export default function TasksListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Deseja excluir esta tarefa?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/tasks/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchTasks()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir tarefa.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'tasks',
+    token: token,
+    onSuccess: fetchTasks
+  })
 
   return (
     <div>
@@ -107,7 +102,7 @@ export default function TasksListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(task.id)}
+                  onClick={() => openConfirmModal(task.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -117,6 +112,13 @@ export default function TasksListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir esta tarefa?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

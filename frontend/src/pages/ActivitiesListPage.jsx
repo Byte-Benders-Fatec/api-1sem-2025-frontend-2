@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function ActivitiesListPage() {
 
@@ -38,18 +40,11 @@ export default function ActivitiesListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Deseja excluir esta atividade?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/activities/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchActivities()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir atividade.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'activities',
+    token: token,
+    onSuccess: fetchActivities
+  })
 
   return (
     <div>
@@ -118,7 +113,7 @@ export default function ActivitiesListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(activity.id)}
+                  onClick={() => openConfirmModal(activity.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -128,6 +123,13 @@ export default function ActivitiesListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir esta atividade?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

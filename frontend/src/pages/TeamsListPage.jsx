@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function TeamsListPage() {
 
@@ -36,18 +38,11 @@ export default function TeamsListPage() {
     setFiltered(results)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este time?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/teams/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchTeams()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir time.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'teams',
+    token: token,
+    onSuccess: fetchTeams
+  })
 
   return (
     <div>
@@ -100,7 +95,7 @@ export default function TeamsListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(team.id)}
+                  onClick={() => openConfirmModal(team.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -110,6 +105,13 @@ export default function TeamsListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este time?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }

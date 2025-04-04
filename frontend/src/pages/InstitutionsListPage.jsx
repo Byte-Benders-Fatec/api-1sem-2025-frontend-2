@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import useConfirmDelete from '../hooks/useConfirmDelete'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function InstitutionsListPage() {
 
@@ -38,18 +40,11 @@ export default function InstitutionsListPage() {
     setFiltered(filteredList)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Deseja excluir esta instituição?')) return
-    try {
-      await axios.delete(`${API_BASE_URL}/institutions/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      fetchInstitutions()
-    } catch (err) {
-      console.error(err)
-      alert('Erro ao excluir instituição.')
-    }
-  }
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'institutions',
+    token: token,
+    onSuccess: fetchInstitutions
+  })
 
   return (
     <div>
@@ -104,7 +99,7 @@ export default function InstitutionsListPage() {
                   Editar
                 </Link>
                 <button
-                  onClick={() => handleDelete(institution.id)}
+                  onClick={() => openConfirmModal(institution.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
@@ -114,6 +109,13 @@ export default function InstitutionsListPage() {
           ))}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir esta instituição?"
+        onConfirm={handleDelete}
+        onCancel={closeConfirmModal}
+      />
     </div>
   )
 }
