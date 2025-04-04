@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import logo from '../assets/logo-fapg.svg'
 import perfil from '../assets/perfil.png'
@@ -22,6 +23,7 @@ export default function SidebarLayout() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [user, setUser] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,7 +53,7 @@ export default function SidebarLayout() {
 
         {user && (
           <div className="bg-green-600/50 m-3 p-4 rounded-lg shadow text-sm text-white border-b border-green-600 flex flex-col items-center">
-            <img
+            <Link to="/profile" ><img
               src={`${API_BASE_URL}/userphotos/${user.id}/view`}
               alt="Foto de perfil"
               onError={(e) => {
@@ -60,6 +62,7 @@ export default function SidebarLayout() {
               }}
               className="w-20 h-20 rounded-full border-2 border-white object-cover mb-3"
             />
+            </Link>
             <p className="font-bold text-white text-base text-center">{user.name}</p>
             <p className="text-white text-center">{user.email}</p>
             <p className="text-white text-center">( {user.system_role} )</p>

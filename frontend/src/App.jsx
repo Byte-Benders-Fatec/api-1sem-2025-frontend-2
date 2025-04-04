@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import SidebarLayout from './components/SidebarLayout'
+import UserProfilePage from './pages/UserProfilePage'
 
 import TeamsListPage from './pages/TeamsListPage'
 import TeamsCreatePage from './pages/TeamsCreatePage'
@@ -66,6 +67,7 @@ export default function App() {
           }
         >
           <Route path="home" element={<HomePage />} />
+          <Route path="profile" element={<UserProfilePage />} />
 
           <Route path="teams/:id/view" element={<TeamsViewPage />} />
           <Route path="teams/:id/edit" element={<TeamsEditPage />} />
