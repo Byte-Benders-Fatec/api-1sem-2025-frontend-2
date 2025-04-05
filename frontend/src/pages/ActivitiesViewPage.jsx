@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function ActivityViewPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [projects, setProjects] = useState([])
   const [projectId, setProjectId] = useState('')
@@ -25,12 +22,8 @@ export default function ActivityViewPage() {
     const fetchData = async () => {
       try {
         const [activityRes, projectsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/activities/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`${API_BASE_URL}/projects`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get(`/activities/${id}`),
+          api.get(`/projects`)
         ])
 
         const a = activityRes.data
@@ -50,7 +43,7 @@ export default function ActivityViewPage() {
     }
 
     fetchData()
-  }, [id, token])
+  }, [id])
 
   return (
     <div>
