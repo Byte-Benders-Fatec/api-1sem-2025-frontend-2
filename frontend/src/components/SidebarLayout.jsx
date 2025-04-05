@@ -45,11 +45,15 @@ export default function SidebarLayout() {
           responseType: 'blob'
         })
   
-        imageUrl = URL.createObjectURL(response.data)
-        setPhotoUrl(imageUrl)
+        if (response?.status === 204) {
+          // Foto não encontrada (usuário não tem foto)
+          setPhotoUrl(perfil)
+        } else {
+          imageUrl = URL.createObjectURL(response.data)
+          setPhotoUrl(imageUrl)
+        }
       } catch (err) {
-        console.error('Erro ao carregar foto:', err)
-        setPhotoUrl(perfil)
+        setError('Erro inesperado ao carregar foto de perfil.')
       }
     }
   

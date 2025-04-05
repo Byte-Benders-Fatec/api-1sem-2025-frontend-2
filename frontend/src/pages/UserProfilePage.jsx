@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import perfil from '../assets/perfil.png'
 
 export default function UserProfilePage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
-  const navigate = useNavigate()
-  const token = localStorage.getItem('token')
-
   const [userId, setUserId] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [photo, setPhoto] = useState(null)
+  const [photoFile, setPhotoFile] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState(perfil)
+  const [hasPhoto, setHasPhoto] = useState(false)
   const [error, setError] = useState(null)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -22,10 +19,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
+        const response = await api.get('/auth/me')
         const { id, name, email } = response.data
         setUserId(id)
         setName(name)
@@ -36,7 +30,37 @@ export default function UserProfilePage() {
     }
 
     fetchUser()
-  }, [token])
+  }, [])
+
+  useEffect(() => {
+    let imageUrl
+
+    const fetchPhoto = async () => {
+      try {
+        const response = await api.get(`/userphotos/${userId}/view`, {
+          responseType: 'blob',
+        })
+
+        if (response?.status === 204) {
+          // Foto não encontrada (usuário não tem foto)
+          setPhotoPreview(perfil)
+          setHasPhoto(false)
+        } else {
+          imageUrl = URL.createObjectURL(response.data)
+          setPhotoPreview(imageUrl)
+          setHasPhoto(true)
+        }
+      } catch (err) {
+        setError('Erro inesperado ao carregar foto de perfil.')
+      }
+    }
+
+    if (userId) fetchPhoto()
+
+    return () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl)
+    }
+  }, [userId])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,7 +73,7 @@ export default function UserProfilePage() {
 
     const payload = {
       name,
-      email
+      email,
     }
 
     if (password) {
@@ -57,64 +81,55 @@ export default function UserProfilePage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/users/${userId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/users/${userId}`, payload)
 
-      if (photo) {
-        
-        // Verifica se o tipo de arquivo é permitido
-        const allowedTypes = ["image/jpeg", "image/png"];
-        if (!allowedTypes.includes(photo.type?.toLowerCase())) {
-          setError('Tipo de arquivo inválido. Apenas JPEG e PNG são suportados.');
-          return;
+      if (photoFile) {
+        const allowedTypes = ['image/jpeg', 'image/png']
+        if (!allowedTypes.includes(photoFile.type?.toLowerCase())) {
+          setError('Tipo de arquivo inválido. Apenas JPEG e PNG são suportados.')
+          return
         }
 
-        // Verifica se o arquivo excede 16MB
-        if (photo.size > 16 * 1024 * 1024) {
-          setError('O arquivo excede o limite de 16MB.');
-          return;
+        if (photoFile.size > 16 * 1024 * 1024) {
+          setError('O arquivo excede o limite de 16MB.')
+          return
         }
 
         const formData = new FormData()
-        formData.append('file', photo)               // Bate com multer.single('file')
-        formData.append('name', photo.name)
-        formData.append('mime_type', photo.type)
+        formData.append('file', photoFile)
+        formData.append('name', photoFile.name)
+        formData.append('mime_type', photoFile.type)
 
         try {
-          await axios.put(`${API_BASE_URL}/userphotos/${userId}`, formData, {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data' 
-            }
+          await api.put(`/userphotos/${userId}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           })
-          navigate('/home')
         } catch (err) {
           setError('Erro ao enviar a foto de perfil.')
         }
       }
+
+      if (hasPhoto && photoPreview === perfil) {
+        await api.delete(`/userphotos/${userId}`)
+      }
+
       setEditMode(false)
     } catch (err) {
-      setError('Erro ao atualizar perfil.')
+      setError('Erro ao atualizar perfil.', err)
     }
   }
 
   const handleDeletePhoto = async () => {
     try {
-      await axios.delete(`${API_BASE_URL}/userphotos/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert('Foto de perfil removida com sucesso.');
-      setPhoto(null); // zera o upload atual
-      // Força recarregamento da imagem (ela vai cair no fallback)
-      const cacheBuster = Date.now();
-      document.querySelector('img[alt=\"Foto de perfil\"]').src = `${API_BASE_URL}/userphotos/${userId}/view?cb=${cacheBuster}`;
+      setPhotoFile(null)
+      setPhotoPreview(perfil)
     } catch (err) {
-      console.error(err);
-      setError('Erro ao remover foto de perfil.');
+      setError('Erro ao remover foto de perfil.')
     }
-  };
-  
+  }
+
   return (
     <div>
       <h2 className="text-xl font-bold text-green-700 mb-4">Meu Perfil</h2>
@@ -123,26 +138,38 @@ export default function UserProfilePage() {
 
       <div className="max-w-md space-y-4">
         <img
-          src={`${API_BASE_URL}/userphotos/${userId}/view`}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = perfil;
-          }}
+          src={photoPreview}
           alt="Foto de perfil"
           className="w-24 h-24 rounded-full border-2 border-white object-cover mb-2"
         />
+
         {editMode && (
           <>
+            <label htmlFor="fileInput" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer inline-block">
+              Escolha uma imagem
+            </label>
             <input
               type="file"
+              id="fileInput"
               accept="image/jpeg,image/png"
-              onChange={(e) => setPhoto(e.target.files[0])}
-              className="text-sm text-gray-700 mb-4"
+              onChange={(e) => {
+                const file = e.target.files[0]
+                if (file) {
+                  setPhotoFile(file)
+                  setPhotoPreview(URL.createObjectURL(file))
+                }
+              }}
+              className="hidden"
             />
+
+            <label htmlFor="btnRemovePhoto" className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white cursor-pointer inline-block">
+              Remover foto de perfil
+            </label>
             <button
               type="button"
+              id="btnRemovePhoto"
               onClick={handleDeletePhoto}
-              className="text-red-600 text-sm underline hover:text-red-800"
+              className="hidden"
             >
               Remover foto de perfil
             </button>
