@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import axios from 'axios'
+import api from '../services/api'
 
-export default function useConfirmDelete({ entity, token, onSuccess }) {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+export default function useConfirmDelete({ entity, onSuccess }) {
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [itemId, setItemId] = useState(null)
@@ -16,9 +14,7 @@ export default function useConfirmDelete({ entity, token, onSuccess }) {
   const handleDelete = async () => {
     setConfirmOpen(false)
     try {
-      await axios.delete(`${API_BASE_URL}/${entity}/${itemId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.delete(`/${entity}/${itemId}`)
       onSuccess()
     } catch (err) {
       console.error(err)
