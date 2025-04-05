@@ -1,25 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 
 export default function ActivitiesListPage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [activities, setActivities] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
 
-  const token = localStorage.getItem('token')
-
   const fetchActivities = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/activities`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/activities`)
       setActivities(res.data)
       setFiltered(res.data)
     } catch (err) {
@@ -42,7 +36,6 @@ export default function ActivitiesListPage() {
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
     entity: 'activities',
-    token: token,
     onSuccess: fetchActivities
   })
 
