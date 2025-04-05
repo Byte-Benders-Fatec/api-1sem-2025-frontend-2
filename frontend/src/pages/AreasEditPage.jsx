@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function AreasEditPage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -17,9 +15,8 @@ export default function AreasEditPage() {
   useEffect(() => {
     const fetchArea = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/areas/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const response = await api.get(`/areas/${id}`)
+
         setName(response.data.name)
         setDescription(response.data.description || '')
         setIsActive(response.data.is_active === 1)
@@ -30,19 +27,16 @@ export default function AreasEditPage() {
     }
 
     fetchArea()
-  }, [id, token])
+  }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
 
     try {
-      await axios.put(
-        `${API_BASE_URL}/areas/${id}`,
-        { name, description, is_active: isActive ? 1 : 0 },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+      await api.put(
+        `/areas/${id}`,
+        { name, description, is_active: isActive ? 1 : 0 }
       )
       navigate('/areas')
     } catch (err) {
