@@ -1,24 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 
 export default function AgenciesListPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const [agencies, setAgencies] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
-  const token = localStorage.getItem('token')
 
   const fetchAgencies = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/agencies`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/agencies`)
       setAgencies(response.data)
       setFiltered(response.data)
     } catch (err) {
@@ -42,7 +37,6 @@ export default function AgenciesListPage() {
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
     entity: 'agencies',
-    token: token,
     onSuccess: fetchAgencies
   })
 
