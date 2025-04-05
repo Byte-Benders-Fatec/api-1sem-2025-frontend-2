@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import api from '../services/api'
 import logo from '../assets/logo-fapg.svg'
 import perfil from '../assets/perfil.png'
@@ -21,18 +19,13 @@ import {
 
 export default function SidebarLayout() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const [user, setUser] = useState(null)
-  const navigate = useNavigate()
+  const [photoUrl, setPhotoUrl] = useState(null)
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('token')
-      if (!token) return
-
       try {
-        const response = await api.get(`${API_BASE_URL}/auth/me`)
+        const response = await api.get(`/auth/me`)
         setUser(response.data)
       } catch (err) {
         console.error('Erro ao carregar dados do usuário logado:', err)
@@ -42,6 +35,34 @@ export default function SidebarLayout() {
     fetchUser()
   }, [])
 
+  useEffect(() => {
+
+    let imageUrl
+
+    const fetchPhoto = async () => {
+      try {
+        const response = await api.get(`/userphotos/${user.id}/view`, {
+          responseType: 'blob'
+        })
+  
+        imageUrl = URL.createObjectURL(response.data)
+        setPhotoUrl(imageUrl)
+      } catch (err) {
+        console.error('Erro ao carregar foto:', err)
+        setPhotoUrl(perfil)
+      }
+    }
+  
+    if (user && user.id) fetchPhoto()
+
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl)
+      }
+    }
+
+  }, [user])
+  
   return (
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-green-700 text-white flex flex-col">
@@ -53,15 +74,12 @@ export default function SidebarLayout() {
         </Link>
         {user && (
           <div className="bg-green-600/50 m-3 p-4 rounded-lg shadow text-sm text-white border-b border-green-600 flex flex-col items-center">
-            <Link to="/profile" ><img
-              src={`${API_BASE_URL}/userphotos/${user.id}/view`}
-              alt="Foto de perfil"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = perfil;
-              }}
-              className="w-20 h-20 rounded-full border-2 border-white object-cover mb-3"
-            />
+            <Link to="/profile" >
+              <img
+                src={photoUrl || perfil}
+                alt="Foto de perfil"
+                className="w-20 h-20 rounded-full border-2 border-white object-cover mb-3"
+              />
             </Link>
             <p className="font-bold text-white text-base text-center">{user.name}</p>
             <p className="text-white text-center">{user.email}</p>
