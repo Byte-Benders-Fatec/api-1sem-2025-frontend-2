@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import api from '../services/api'
 import logo from '../assets/logo-fapg.svg'
 import perfil from '../assets/perfil.png'
 
@@ -31,9 +32,7 @@ export default function SidebarLayout() {
       if (!token) return
 
       try {
-        const response = await axios.get(`${API_BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const response = await api.get(`${API_BASE_URL}/auth/me`)
         setUser(response.data)
       } catch (err) {
         console.error('Erro ao carregar dados do usuário logado:', err)
