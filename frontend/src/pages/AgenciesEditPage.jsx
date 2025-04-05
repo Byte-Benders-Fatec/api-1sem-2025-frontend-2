@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import { formatCNPJ } from '../utils/formatters'
 
 export default function AgencyEditPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [acronym, setAcronym] = useState('')
@@ -21,10 +18,7 @@ export default function AgencyEditPage() {
   useEffect(() => {
     const fetchAgency = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/agencies/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
+        const res = await api.get(`/agencies/${id}`)
         const agency = res.data
         setName(agency.name)
         setAcronym(agency.acronym)
@@ -38,7 +32,7 @@ export default function AgencyEditPage() {
     }
 
     fetchAgency()
-  }, [id, token])
+  }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -53,9 +47,7 @@ export default function AgencyEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/agencies/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/agencies/${id}`, payload)
       navigate('/agencies')
     } catch (err) {
       console.error(err)
