@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import axios from 'axios'
+import api from '../services/api'
 
-export default function DocumentUploadForm({ projectId, onUploadSuccess, onClose }) {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  const token = localStorage.getItem('token')
+export default function DocumentUploadForm({ id, onUploadSuccess, onClose }) {
 
   const [file, setFile] = useState(null)
   const [error, setError] = useState(null)
@@ -22,16 +20,17 @@ export default function DocumentUploadForm({ projectId, onUploadSuccess, onClose
       return
     }
 
+    // ATENÇÃO: Placeholder, futuramente fazer a conexão entre a entidade e o documento
+    const entitieId = id || null
+
     const formData = new FormData()
-    formData.append('content', file)
+    formData.append('file', file)
     formData.append('name', file.name)
     formData.append('mime_type', file.type)
-    formData.append('project_id', projectId)
 
     try {
-      await axios.post(`${API_BASE_URL}/documents`, formData, {
+      await api.post(`/documents`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       })
