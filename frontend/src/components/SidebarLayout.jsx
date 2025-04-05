@@ -46,11 +46,12 @@ export default function SidebarLayout() {
   return (
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-green-700 text-white flex flex-col">
-        <div className="flex items-center gap-0 mb-6">
-          <img src={logo} alt="Logo FAPG" className="w-24 h-24" />
-          <span className="p-4 text-xl font-bold border-b border-green-600">Painel Projetos</span>
-        </div>
-
+        <Link to="/home" >
+          <div className="flex items-center gap-0 mb-6">
+            <img src={logo} alt="Logo FAPG" className="w-24 h-24" />
+            <span className="p-4 text-xl font-bold border-b border-green-600">Painel Projetos</span>
+          </div>
+        </Link>
         {user && (
           <div className="bg-green-600/50 m-3 p-4 rounded-lg shadow text-sm text-white border-b border-green-600 flex flex-col items-center">
             <Link to="/profile" ><img
