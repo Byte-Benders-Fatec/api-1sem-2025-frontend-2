@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function LoginPage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,9 +15,11 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const res = await api.post(`/auth/login`, {
         email,
         password
+      }, {
+        private: false
       })
 
       // resposta: { message, code, login_token }
@@ -37,8 +38,8 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const res = await axios.post(
-        `${API_BASE_URL}/auth/verify-code`,
+      const res = await api.post(
+        `/auth/verify-code`,
         { email, code },
         {
           headers: {
