@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function DocumentEditPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [isActive, setIsActive] = useState(true)
@@ -17,9 +14,7 @@ export default function DocumentEditPage() {
   useEffect(() => {
     const fetchDocument = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/documents/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await api.get(`/documents/${id}`)
         setName(res.data.name)
         setIsActive(res.data.is_active)
       } catch (err) {
@@ -29,7 +24,7 @@ export default function DocumentEditPage() {
     }
 
     fetchDocument()
-  }, [id, token])
+  }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -41,9 +36,7 @@ export default function DocumentEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/documents/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/documents/${id}`, payload)
       navigate('/documents')
     } catch (err) {
       console.error(err)
