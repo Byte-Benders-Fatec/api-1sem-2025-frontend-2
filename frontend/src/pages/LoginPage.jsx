@@ -1,7 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import useAuth from '../hooks/useAuth'
 
 export default function LoginPage() {
+
+  const { authenticated, loading } = useAuth()
+  const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -9,6 +14,13 @@ export default function LoginPage() {
   const [step, setStep] = useState(1) // 1 = login, 2 = código OTP
   const [loginToken, setLoginToken] = useState(null)
   const [error, setError] = useState(null)
+
+  // Redireciona se já estiver autenticado
+  useEffect(() => {
+    if (!loading && authenticated) {
+      navigate('/home', { replace: true })
+    }
+  }, [loading, authenticated, navigate])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -53,6 +65,10 @@ export default function LoginPage() {
     } catch (err) {
       setError('Código inválido ou expirado.')
     }
+  }
+
+  if (loading) {
+    return <p className="text-center mt-8 text-gray-600">Verificando sessão...</p>
   }
 
   return (

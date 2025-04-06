@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import PrivateRoute from './routes/PrivateRoute'
+
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import SidebarLayout from './components/SidebarLayout'
@@ -47,11 +49,6 @@ import InstitutionsListPage from './pages/InstitutionsListPage'
 import InstitutionsCreatePage from './pages/InstitutionsCreatePage'
 import InstitutionsEditPage from './pages/InstitutionsEditPage'
 import InstitutionsViewPage from './pages/InstitutionsViewPage'
-
-function PrivateRoute({ children }) {
-  const token = localStorage.getItem('token')
-  return token ? children : <Navigate to="/" />
-}
 
 export default function App() {
   return (
