@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function TaskEditPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [activities, setActivities] = useState([])
   const [activityId, setActivityId] = useState('')
@@ -22,12 +19,8 @@ export default function TaskEditPage() {
     const fetchData = async () => {
       try {
         const [taskRes, activitiesRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/tasks/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`${API_BASE_URL}/activities`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get(`/tasks/${id}`),
+          api.get(`/activities`)
         ])
 
         const task = taskRes.data
@@ -44,7 +37,7 @@ export default function TaskEditPage() {
     }
 
     fetchData()
-  }, [id, token])
+  }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -59,9 +52,7 @@ export default function TaskEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/tasks/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/tasks/${id}`, payload)
       navigate('/tasks')
     } catch (err) {
       console.error(err)
