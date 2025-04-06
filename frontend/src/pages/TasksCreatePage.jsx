@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function TaskCreatePage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [activities, setActivities] = useState([])
   const [activityId, setActivityId] = useState('')
@@ -16,18 +14,13 @@ export default function TaskCreatePage() {
   const [error, setError] = useState(null)
 
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [activitiesRes, userRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/activities`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`${API_BASE_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get(`/activities`),
+          api.get(`/auth/me`)
         ])
         setActivities(activitiesRes.data)
         setUserId(userRes.data.id)
@@ -38,7 +31,7 @@ export default function TaskCreatePage() {
     }
 
     fetchData()
-  }, [token])
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -54,9 +47,7 @@ export default function TaskCreatePage() {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/tasks`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.post(`/tasks`, payload)
       navigate('/tasks')
     } catch (err) {
       console.error(err)
