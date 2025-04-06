@@ -4,6 +4,7 @@ import api from '../services/api'
 export default function DocumentUploadForm({ id, onUploadSuccess, onClose }) {
 
   const [file, setFile] = useState(null)
+  const [fileName, setFileName] = useState('')
   const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
@@ -51,12 +52,40 @@ export default function DocumentUploadForm({ id, onUploadSuccess, onClose }) {
         <label className="block font-medium text-gray-700">
           Arquivo (Máximo 16 MB) *
         </label>
+
+        <div className="flex gap-2">
+          {/* Nome do arquivo selecionado */}
+          <input
+            type="text"
+            id="fileName"
+            className="flex-1 border border-gray-300 rounded p-2"
+            value={fileName}
+            readOnly
+          />
+
+          {/* Botão customizado */}
+          <label 
+            htmlFor="fileInput" 
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer inline-block"
+          >
+            Escolher Arquivo
+          </label>
+        </div>
+
+        {/* Input de arquivo real */}
         <input
-          type="file"
-          className="w-full p-2 border rounded"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
+        type="file"
+        id="fileInput"
+        accept="application/pdf"
+        onChange={(e) => {
+          const file = e.target.files[0]
+          if (file) {
+            setFile(file)
+            setFileName(file.name)
+            setError(null)
+          }
+        }}
+        className="hidden"
         />
       </div>
 

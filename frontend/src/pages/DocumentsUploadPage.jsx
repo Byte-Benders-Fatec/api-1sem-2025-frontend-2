@@ -53,7 +53,6 @@ export default function DocumentUploadPage() {
             Arquivo (Máximo 16 MB) *
           </label>
 
-
           <div className="flex gap-2">
             {/* Nome do arquivo selecionado */}
             <input
@@ -73,7 +72,7 @@ export default function DocumentUploadPage() {
             </label>
           </div>
 
-           {/* Input de arquivo real */}
+          {/* Input de arquivo real */}
           <input
             type="file"
             id="fileInput"
@@ -83,6 +82,7 @@ export default function DocumentUploadPage() {
               if (file) {
                 setFile(file)
                 setFileName(file.name)
+                setError(null)
               }
             }}
             className="hidden"
