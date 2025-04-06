@@ -5,6 +5,7 @@ import api from '../services/api'
 export default function DocumentUploadPage() {
 
   const [file, setFile] = useState(null)
+  const [fileName, setFileName] = useState('')
   const [error, setError] = useState(null)
   const navigate = useNavigate()
 
@@ -51,16 +52,44 @@ export default function DocumentUploadPage() {
           <label className="block font-medium text-gray-700">
             Arquivo (Máximo 16 MB) *
           </label>
+
+
+          <div className="flex gap-2">
+            {/* Nome do arquivo selecionado */}
+            <input
+              type="text"
+              id="fileName"
+              className="flex-1 border border-gray-300 rounded p-2"
+              value={fileName}
+              readOnly
+            />
+
+            {/* Botão customizado */}
+            <label 
+              htmlFor="fileInput" 
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer inline-block"
+            >
+              Escolher Arquivo
+            </label>
+          </div>
+
+           {/* Input de arquivo real */}
           <input
             type="file"
-            className="w-full p-2 border rounded"
+            id="fileInput"
             accept="application/pdf"
-            onChange={(e) => setFile(e.target.files[0])}
-            required
+            onChange={(e) => {
+              const file = e.target.files[0]
+              if (file) {
+                setFile(file)
+                setFileName(file.name)
+              }
+            }}
+            className="hidden"
           />
         </div>
 
-        <div className="flex space-x-12 mt-6">
+        <div className="flex justify-between mt-6">
 
             <button
                 type="button"
