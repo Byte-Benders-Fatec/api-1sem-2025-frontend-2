@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import { formatCNPJ } from '../utils/formatters'
 
 export default function InstitutionsEditPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [acronym, setAcronym] = useState('')
@@ -21,10 +18,7 @@ export default function InstitutionsEditPage() {
   useEffect(() => {
     const fetchInstitution = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/institutions/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
+        const res = await api.get(`/institutions/${id}`)
         const institution = res.data
         setName(institution.name)
         setAcronym(institution.acronym)
@@ -38,7 +32,7 @@ export default function InstitutionsEditPage() {
     }
 
     fetchInstitution()
-  }, [id, token])
+  }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -53,9 +47,7 @@ export default function InstitutionsEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/institutions/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/institutions/${id}`, payload)
       navigate('/institutions')
     } catch (err) {
       console.error(err)
