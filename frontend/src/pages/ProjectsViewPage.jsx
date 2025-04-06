@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function ProjectViewPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
@@ -26,12 +23,8 @@ export default function ProjectViewPage() {
     const fetchProjectAndAgencies = async () => {
       try {
         const [projectRes, agenciesRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/projects/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`${API_BASE_URL}/agencies`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get(`/projects/${id}`),
+          api.get(`/agencies`)
         ])
 
         const p = projectRes.data
@@ -52,7 +45,7 @@ export default function ProjectViewPage() {
     }
 
     fetchProjectAndAgencies()
-  }, [id, token])
+  }, [id])
 
   return (
     <div>
