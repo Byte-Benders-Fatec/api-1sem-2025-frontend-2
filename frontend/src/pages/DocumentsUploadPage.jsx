@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function DocumentUploadPage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [file, setFile] = useState(null)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -32,9 +29,8 @@ export default function DocumentUploadPage() {
     formData.append('mime_type', file.type)
 
     try {
-      await axios.post(`${API_BASE_URL}/documents`, formData, {
+      await api.post(`/documents`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       })
