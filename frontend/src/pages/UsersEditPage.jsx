@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function UserEditPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -20,9 +17,7 @@ export default function UserEditPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const response = await api.get(`/users/${id}`)
         setName(response.data.name)
         setEmail(response.data.email)
         setIsActive(response.data.is_active === 1)
@@ -33,7 +28,7 @@ export default function UserEditPage() {
     }
 
     fetchUser()
-  }, [id, token])
+  }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -55,9 +50,7 @@ export default function UserEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/users/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/users/${id}`, payload)
       navigate('/users')
     } catch (err) {
       console.error(err)
