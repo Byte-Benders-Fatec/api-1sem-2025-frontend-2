@@ -1,24 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
+import { downloadDocument, viewDocument } from '../utils/fileHelpers'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 
 export default function DocumentsListPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const [documents, setDocuments] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
-  const token = localStorage.getItem('token')
 
   const fetchDocuments = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/documents`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/documents`)
       setDocuments(res.data)
       setFiltered(res.data)
     } catch (err) {
@@ -41,9 +37,17 @@ export default function DocumentsListPage() {
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
     entity: 'documents',
-    token: token,
     onSuccess: fetchDocuments
   })
+
+
+
+
+
+
+
+
+
 
   return (
     <div>
@@ -83,20 +87,18 @@ export default function DocumentsListPage() {
               <td className="p-2 border-b">{doc.mime_type}</td>
               <td className="p-2 border-b">{doc.is_active ? 'Sim' : 'Não'}</td>
               <td className="p-2 border-b space-x-2">
-                <a
-                  href={`${API_BASE_URL}/documents/${doc.id}/download`}
+                <button
+                  onClick={() => downloadDocument(doc)}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
                 >
                   Baixar
-                </a>
-                <a
-                  href={`${API_BASE_URL}/documents/${doc.id}/view`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </button>
+                <button
+                  onClick={() => viewDocument(doc)}
                   className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                 >
                   Visualizar
-                </a>
+                </button>
                 <Link
                   to={`/documents/${doc.id}/edit`}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
