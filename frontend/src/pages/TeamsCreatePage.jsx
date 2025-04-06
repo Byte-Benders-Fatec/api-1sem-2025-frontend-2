@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function TeamsCreatePage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -18,15 +16,9 @@ export default function TeamsCreatePage() {
     setSuccess(false)
 
     try {
-      const token = localStorage.getItem('token')
-      await axios.post(
-        `${API_BASE_URL}/teams`,
-        { name, description },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+      await api.post(
+        `/teams`,
+        { name, description }
       )
       setSuccess(true)
       setName('')
