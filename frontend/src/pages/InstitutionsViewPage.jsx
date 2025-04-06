@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function InstitutionsViewPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [acronym, setAcronym] = useState('')
@@ -20,10 +17,7 @@ export default function InstitutionsViewPage() {
   useEffect(() => {
     const fetchInstitution = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/institutions/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
+        const res = await api.get(`/institutions/${id}`)
         const institution = res.data
         setName(institution.name)
         setAcronym(institution.acronym)
@@ -37,7 +31,7 @@ export default function InstitutionsViewPage() {
     }
 
     fetchInstitution()
-  }, [id, token])
+  }, [id])
 
   return (
     <div>
