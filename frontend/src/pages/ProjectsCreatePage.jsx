@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function ProjectCreatePage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
@@ -18,18 +16,13 @@ export default function ProjectCreatePage() {
   const [agencies, setAgencies] = useState([])
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   useEffect(() => {
     const fetchUserAndAgencies = async () => {
       try {
         const [userRes, agenciesRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`${API_BASE_URL}/agencies`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get(`/auth/me`),
+          api.get(`/agencies`)
         ])
         setCreatedById(userRes.data.id)
         setAgencies(agenciesRes.data)
@@ -40,7 +33,7 @@ export default function ProjectCreatePage() {
     }
 
     fetchUserAndAgencies()
-  }, [token])
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -59,9 +52,7 @@ export default function ProjectCreatePage() {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/projects`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.post(`/projects`, payload)
       navigate('/projects')
     } catch (err) {
       console.error(err)
