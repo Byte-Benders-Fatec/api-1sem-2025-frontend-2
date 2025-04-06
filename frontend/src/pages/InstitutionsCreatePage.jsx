@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import { formatCNPJ } from '../utils/formatters'
 
 export default function InstitutionsCreatePage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [name, setName] = useState('')
   const [acronym, setAcronym] = useState('')
@@ -13,7 +11,6 @@ export default function InstitutionsCreatePage() {
   const [website, setWebsite] = useState('')
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -27,11 +24,7 @@ export default function InstitutionsCreatePage() {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/institutions`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+      await api.post(`/institutions`, payload)
       navigate('/institutions')
     } catch (err) {
       console.error(err)
