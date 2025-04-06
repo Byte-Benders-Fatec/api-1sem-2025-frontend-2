@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function UserCreatePage() {
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -12,7 +10,6 @@ export default function UserCreatePage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -24,17 +21,12 @@ export default function UserCreatePage() {
     }
 
     try {
-      await axios.post(
-        `${API_BASE_URL}/users`,
+      await api.post(
+        `/users`,
         {
           name,
           email,
           password: password
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       )
       navigate('/users')
