@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
+import { downloadDocument } from '../utils/fileHelpers'
 import Modal from '../components/Modal'
 import DocumentUploadForm from '../components/DocumentUploadForm'
 
 export default function ProjectEditPage() {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
@@ -30,12 +29,8 @@ export default function ProjectEditPage() {
     const fetchData = async () => {
       try {
         const [projectRes, agenciesRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/projects/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`${API_BASE_URL}/agencies`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          api.get(`/projects/${id}`),
+          api.get(`/agencies`)
         ])
 
         const p = projectRes.data
@@ -57,13 +52,11 @@ export default function ProjectEditPage() {
 
     fetchData()
     refreshDocuments()
-  }, [id, token])
+  }, [id])
 
   const refreshDocuments = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/documents?project_id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/documents?project_id=${id}`)
       setDocuments(res.data)
     } catch (err) {
       console.error('Erro ao buscar documentos:', err)
@@ -87,9 +80,7 @@ export default function ProjectEditPage() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/projects/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/projects/${id}`, payload)
       navigate('/projects')
     } catch (err) {
       console.error(err)
@@ -208,14 +199,12 @@ export default function ProjectEditPage() {
           {documents.map((doc) => (
             <li key={doc.id} className="flex justify-between items-center bg-gray-100 p-2 rounded">
               <span>{doc.name}</span>
-              <a
-                href={`${API_BASE_URL}/documents/${doc.id}/download`}
-                className="text-blue-600 underline"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => downloadDocument(doc)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
               >
-                Download
-              </a>
+                Baixar
+              </button>
             </li>
           ))}
         </ul>
