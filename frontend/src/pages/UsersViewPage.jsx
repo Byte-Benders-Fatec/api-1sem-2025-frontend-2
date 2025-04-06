@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 
 export default function UserViewPage() {
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
   const { id } = useParams()
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -18,9 +15,7 @@ export default function UserViewPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const response = await api.get(`/users/${id}`)
         setName(response.data.name)
         setEmail(response.data.email)
         setIsActive(response.data.is_active === 1)
@@ -31,7 +26,7 @@ export default function UserViewPage() {
     }
 
     fetchUser()
-  }, [id, token])
+  }, [id])
 
   return (
     <div>
