@@ -43,7 +43,7 @@ import AreasViewPage from './pages/AreasViewPage'
 
 import DocumentsListPage from './pages/DocumentsListPage'
 import DocumentsUploadPage from './pages/DocumentsUploadPage'
-import DocumentsEditPage from './pages/DocumentsEditPaga'
+import DocumentsEditPage from './pages/DocumentsEditPage'
 
 import InstitutionsListPage from './pages/InstitutionsListPage'
 import InstitutionsCreatePage from './pages/InstitutionsCreatePage'
