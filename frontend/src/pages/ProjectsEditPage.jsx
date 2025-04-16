@@ -56,7 +56,7 @@ export default function ProjectEditPage() {
 
   const refreshDocuments = async () => {
     try {
-      const res = await api.get(`/documents?project_id=${id}`)
+      const res = await api.get(`/projects/${id}/documents`)
       setDocuments(res.data)
     } catch (err) {
       console.error('Erro ao buscar documentos:', err)
