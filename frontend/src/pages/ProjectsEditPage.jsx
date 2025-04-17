@@ -212,7 +212,8 @@ export default function ProjectEditPage() {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Adicionar Documento">
         <DocumentUploadForm
-          projectId={id}
+          EntityId={id}
+          EntityType={"project"}
           onClose={() => setShowModal(false)}
           onUploadSuccess={refreshDocuments}
         />

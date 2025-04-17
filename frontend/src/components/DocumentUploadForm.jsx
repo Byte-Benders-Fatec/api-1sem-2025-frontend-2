@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import api from '../services/api'
 
-export default function DocumentUploadForm({ id, onUploadSuccess, onClose }) {
+export default function DocumentUploadForm({ EntityId, EntityType, onUploadSuccess, onClose }) {
 
   const [file, setFile] = useState(null)
   const [fileName, setFileName] = useState('')
@@ -22,7 +22,7 @@ export default function DocumentUploadForm({ id, onUploadSuccess, onClose }) {
     }
 
     // ATENÇÃO: Placeholder, futuramente fazer a conexão entre a entidade e o documento
-    const entitieId = id || null
+    // const entitieId = id || null
 
     const formData = new FormData()
     formData.append('file', file)
@@ -30,11 +30,21 @@ export default function DocumentUploadForm({ id, onUploadSuccess, onClose }) {
     formData.append('mime_type', file.type)
 
     try {
-      await api.post(`/documents`, formData, {
+      // Cria o documento
+      const resp = await api.post(`/documents`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
+
+      const documentId = resp.data.id
+
+      // Vincula o documento à entidade pai (projeto)
+      if (EntityType === 'project') {
+        await api.post(`/projects/${EntityId}/documents`, {
+          document_id: documentId
+        })
+      }
 
       if (onUploadSuccess) onUploadSuccess()
       if (onClose) onClose()
