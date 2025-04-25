@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
-import ProjectLinkForm from '../components/ProjectLinkForm' // Supondo que este componente será criado
+import ProjectLinkForm from '../components/ProjectLinkForm'
+import ProjectFinalizationForm from '../components/ProjectFinalizationForm'
 
 export default function ProjectCreatePage() {
   const [name, setName] = useState('')
@@ -44,7 +45,8 @@ export default function ProjectCreatePage() {
       ...(description && { description }),
       ...(status && { status }),
       ...(budget && { budget }),
-      created_by_id: createdById
+      created_by_id: createdById,
+      responsible_user_id: createdById
     }
 
     try {
@@ -169,9 +171,18 @@ export default function ProjectCreatePage() {
       {step === 2 && createdProjectId && (
         <ProjectLinkForm
           projectId={createdProjectId}
+          onComplete={() => setStep(3)}
+        />
+      )}
+
+      {step === 3 && createdProjectId && (
+        <ProjectFinalizationForm
+          projectId={createdProjectId}
+          createdById={createdById}
           onComplete={() => navigate('/projects')}
         />
       )}
+
     </div>
   )
 }
