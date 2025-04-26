@@ -44,6 +44,7 @@ import AreasViewPage from './pages/AreasViewPage'
 import DocumentsListPage from './pages/DocumentsListPage'
 import DocumentsUploadPage from './pages/DocumentsUploadPage'
 import DocumentsEditPage from './pages/DocumentsEditPage'
+import DocumentsViewPage from './pages/DocumentsViewPage'
 
 import InstitutionsListPage from './pages/InstitutionsListPage'
 import InstitutionsCreatePage from './pages/InstitutionsCreatePage'
@@ -102,6 +103,7 @@ export default function App() {
           <Route path="areas/create" element={<AreasCreatePage />} />
           <Route path="areas" element={<AreasListPage />} />
 
+          <Route path="documents/:id/view" element={<DocumentsViewPage />} />
           <Route path="documents/:id/edit" element={<DocumentsEditPage />} />
           <Route path="documents/upload" element={<DocumentsUploadPage />} />
           <Route path="documents" element={<DocumentsListPage />} />

@@ -120,6 +120,12 @@ export default function DocumentsListPage() {
                 >
                   Visualizar
                 </button>
+                {/* <Link
+                  to={`/documents/${doc.id}/view`}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                >
+                  Visualizar
+                </Link> */}
                 <Link
                   to={`/documents/${doc.id}/edit`}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
