@@ -6,17 +6,17 @@ import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 
 export default function DocumentsListPage() {
-
   const [documents, setDocuments] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
+  const [filterActive, setFilterActive] = useState('active')
   const [error, setError] = useState(null)
 
   const fetchDocuments = async () => {
     try {
       const res = await api.get(`/documents`)
       setDocuments(res.data)
-      setFiltered(res.data)
+      filterAndSearch(res.data, search, filterActive)
     } catch (err) {
       console.error(err)
       setError('Erro ao carregar documentos.')
@@ -27,27 +27,36 @@ export default function DocumentsListPage() {
     fetchDocuments()
   }, [])
 
+  const filterAndSearch = (documentsList, searchText, activeFilter) => {
+    const lowerText = searchText.toLowerCase()
+    let results = documentsList.filter((d) =>
+      d.name.toLowerCase().includes(lowerText) ||
+      (d.mime_type && d.mime_type.toLowerCase().includes(lowerText))
+    )
+
+    if (activeFilter === 'active') {
+      results = results.filter(d => d.is_active)
+    } else if (activeFilter === 'inactive') {
+      results = results.filter(d => !d.is_active)
+    }
+
+    setFiltered(results)
+  }
+
   const handleSearch = (text) => {
     setSearch(text)
-    const results = documents.filter((d) =>
-      d.name.toLowerCase().includes(text.toLowerCase())
-    )
-    setFiltered(results)
+    filterAndSearch(documents, text, filterActive)
+  }
+
+  const handleFilterActive = (value) => {
+    setFilterActive(value)
+    filterAndSearch(documents, search, value)
   }
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
     entity: 'documents',
     onSuccess: fetchDocuments
   })
-
-
-
-
-
-
-
-
-
 
   return (
     <div>
@@ -61,13 +70,25 @@ export default function DocumentsListPage() {
         </Link>
       </div>
 
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Buscar por nome"
-        className="border border-gray-300 rounded p-2 mb-4 w-full max-w-md"
-      />
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder="Buscar por nome ou tipo"
+          className="border border-gray-300 rounded p-2 w-full md:w-1/2"
+        />
+
+        <select
+          value={filterActive}
+          onChange={(e) => handleFilterActive(e.target.value)}
+          className="border border-gray-300 rounded p-2 w-full md:w-1/4"
+        >
+          <option value="active">Ativos</option>
+          <option value="inactive">Inativos</option>
+          <option value="all">Todos</option>
+        </select>
+      </div>
 
       {error && <p className="text-red-600">{error}</p>}
 
@@ -116,6 +137,7 @@ export default function DocumentsListPage() {
           ))}
         </tbody>
       </table>
+
       <ConfirmModal
         isOpen={confirmOpen}
         title="Confirmar Exclusão"
