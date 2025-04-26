@@ -74,7 +74,7 @@ export default function ActivitiesListPage() {
           type="text"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Buscar por nome ou status da atividade"
+          placeholder="Buscar por nome ou status"
           className="border border-gray-300 rounded p-2 w-full md:w-1/2"
         />
 

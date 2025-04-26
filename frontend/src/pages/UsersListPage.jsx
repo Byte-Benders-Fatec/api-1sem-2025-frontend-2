@@ -74,7 +74,7 @@ export default function UsersListPage() {
           type="text"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Buscar por nome ou email"
+          placeholder="Buscar por nome ou e-mail"
           className="border border-gray-300 rounded p-2 w-full md:w-1/2"
         />
 
@@ -95,7 +95,7 @@ export default function UsersListPage() {
         <thead className="bg-green-100">
           <tr>
             <th className="text-left p-2 border-b">Nome</th>
-            <th className="text-left p-2 border-b">Email</th>
+            <th className="text-left p-2 border-b">E-mail</th>
             <th className="text-left p-2 border-b">Ativo</th>
             <th className="text-left p-2 border-b">Ações</th>
           </tr>
