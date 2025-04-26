@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
-import DocumentUploadForm from './DocumentUploadForm'
 
 export default function ProjectLinkForm({ projectId, onComplete }) {
   const [areas, setAreas] = useState([])
@@ -21,7 +20,6 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
   const [addedAgencies, setAddedAgencies] = useState([])
 
   const [error, setError] = useState(null)
-  const [showDocUpload, setShowDocUpload] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,10 +94,8 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
             className="flex-1 p-2 border rounded"
           >
             <option value="">Selecione uma área</option>
-            {areas
-                .filter(area => !addedAreas.find(a => a.id === area.id))
-                .map(area => (
-                    <option key={area.id} value={area.id}>{area.name}</option>
+            {areas.filter(area => !addedAreas.find(a => a.id === area.id)).map(area => (
+              <option key={area.id} value={area.id}>{area.name}</option>
             ))}
           </select>
           <button
@@ -133,10 +129,8 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
             className="flex-1 p-2 border rounded"
           >
             <option value="">Selecione um time</option>
-            {teams
-                .filter(team => !addedTeams.find(t => t.id === team.id))
-                .map(team => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
+            {teams.filter(team => !addedTeams.find(t => t.id === team.id)).map(team => (
+              <option key={team.id} value={team.id}>{team.name}</option>
             ))}
           </select>
           <button
@@ -170,10 +164,8 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
             className="flex-1 p-2 border rounded"
           >
             <option value="">Selecione uma instituição</option>
-            {institutions
-                .filter(inst => !addedInstitutions.find(i => i.id === inst.id))
-                .map(inst => (
-                    <option key={inst.id} value={inst.id}>{inst.acronym} - {inst.name}</option>
+            {institutions.filter(inst => !addedInstitutions.find(i => i.id === inst.id)).map(inst => (
+              <option key={inst.id} value={inst.id}>{inst.acronym} - {inst.name}</option>
             ))}
           </select>
           <button
@@ -207,10 +199,8 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
             className="flex-1 p-2 border rounded"
           >
             <option value="">Selecione uma agência</option>
-            {agencies
-                .filter(agency => !addedAgencies.find(a => a.id === agency.id))
-                .map(agency => (
-                    <option key={agency.id} value={agency.id}>{agency.acronym} - {agency.name}</option>
+            {agencies.filter(agency => !addedAgencies.find(a => a.id === agency.id)).map(agency => (
+              <option key={agency.id} value={agency.id}>{agency.acronym} - {agency.name}</option>
             ))}
           </select>
           <button
@@ -231,33 +221,13 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
         </ul>
       </div>
 
-      {/* DOCUMENTOS */}
-      <div className="mt-6">
-        <button
-          onClick={() => setShowDocUpload(!showDocUpload)}
-          className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-        >
-          {showDocUpload ? 'Ocultar Upload de Documento' : 'Adicionar Documento (Opcional)'}
-        </button>
-        {showDocUpload && (
-          <div className="mt-4">
-            <DocumentUploadForm
-              EntityId={projectId}
-              EntityType="project"
-              onUploadSuccess={() => alert('Documento adicionado com sucesso!')}
-              onClose={() => setShowDocUpload(false)}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* BOTÃO FINAL */}
+      {/* BOTÃO PRÓXIMA ETAPA */}
       <div className="flex justify-end mt-8 gap-4">
         <button
           onClick={handleSubmit}
           className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
         >
-          Finalizar Cadastro
+          Próxima Etapa
         </button>
       </div>
     </div>

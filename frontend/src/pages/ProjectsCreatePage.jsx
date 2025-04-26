@@ -149,7 +149,7 @@ export default function ProjectCreatePage() {
             />
           </div>
 
-          <div className="flex space-x-12 mt-6">
+          <div className="flex justify-between mt-6">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -162,7 +162,7 @@ export default function ProjectCreatePage() {
               type="submit"
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
-              Próximo
+              Próxima Etapa
             </button>
           </div>
         </form>
