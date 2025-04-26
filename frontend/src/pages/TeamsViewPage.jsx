@@ -3,28 +3,31 @@ import { useNavigate, useParams } from 'react-router-dom'
 import api from '../services/api'
 
 export default function TeamViewPage() {
-
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [teamUsers, setTeamUsers] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const response = await api.get(`/teams/${id}`)
-        setName(response.data.name)
-        setDescription(response.data.description || '')
-        setIsActive(response.data.is_active === 1)
+        const [teamRes, usersRes] = await Promise.all([
+          api.get(`/teams/${id}`),
+          api.get(`/teams/${id}/users`)
+        ])
+        setName(teamRes.data.name)
+        setDescription(teamRes.data.description || '')
+        setIsActive(teamRes.data.is_active === 1)
+        setTeamUsers(usersRes.data)
       } catch (err) {
         setError('Erro ao carregar time.')
         console.error(err)
       }
     }
-
     fetchTeam()
   }, [id])
 
@@ -44,6 +47,7 @@ export default function TeamViewPage() {
             readOnly
           />
         </div>
+
         <div>
           <label className="block font-medium text-gray-700">Descrição</label>
           <textarea
@@ -62,7 +66,23 @@ export default function TeamViewPage() {
           <label className="text-gray-700">Time ativo</label>
         </div>
 
-        <div className="mt-6">
+        {/* INTEGRANTES DO TIME */}
+        <div className="mt-6 space-y-2">
+          <h3 className="text-lg font-semibold text-gray-700">Integrantes do Time</h3>
+          {teamUsers.length === 0 ? (
+            <p className="text-gray-500">Nenhum integrante vinculado.</p>
+          ) : (
+            <ul className="space-y-2">
+              {teamUsers.map(user => (
+                <li key={user.id} className="flex justify-between border-b py-1">
+                  <span>{user.name} ({user.email})</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="flex justify-end mt-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
