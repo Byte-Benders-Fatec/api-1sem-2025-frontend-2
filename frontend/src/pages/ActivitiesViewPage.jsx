@@ -136,7 +136,7 @@ export default function ActivityViewPage() {
           <label className="text-gray-700">Atividade ativa</label>
         </div>
 
-        <div className="mt-6">
+        <div className="flex justify-end mt-8">
           <button
             type="button"
             onClick={() => navigate(-1)}

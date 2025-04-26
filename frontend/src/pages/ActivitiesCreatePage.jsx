@@ -151,7 +151,7 @@ export default function ActivityCreatePage() {
           />
         </div>
 
-        <div className="flex space-x-12 mt-6">
+        <div className="flex justify-between mt-6">
 
             <button
                 type="button"
