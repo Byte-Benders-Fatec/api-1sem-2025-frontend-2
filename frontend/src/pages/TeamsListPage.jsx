@@ -5,17 +5,17 @@ import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 
 export default function TeamsListPage() {
-
   const [teams, setTeams] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
+  const [filterActive, setFilterActive] = useState('active')
   const [error, setError] = useState(null)
 
   const fetchTeams = async () => {
     try {
       const response = await api.get(`/teams`)
       setTeams(response.data)
-      setFiltered(response.data)
+      filterAndSearch(response.data, search, filterActive)
     } catch (err) {
       setError('Erro ao carregar times')
       console.error(err)
@@ -26,10 +26,30 @@ export default function TeamsListPage() {
     fetchTeams()
   }, [])
 
+  const filterAndSearch = (teamsList, searchText, activeFilter) => {
+    const lowerText = searchText.toLowerCase()
+    let results = teamsList.filter((t) =>
+      t.name.toLowerCase().includes(lowerText) ||
+      (t.description && t.description.toLowerCase().includes(lowerText))
+    )
+
+    if (activeFilter === 'active') {
+      results = results.filter(t => t.is_active)
+    } else if (activeFilter === 'inactive') {
+      results = results.filter(t => !t.is_active)
+    }
+
+    setFiltered(results)
+  }
+
   const handleSearch = (text) => {
     setSearch(text)
-    const results = teams.filter(t => t.name.toLowerCase().includes(text.toLowerCase()))
-    setFiltered(results)
+    filterAndSearch(teams, text, filterActive)
+  }
+
+  const handleFilterActive = (value) => {
+    setFilterActive(value)
+    filterAndSearch(teams, search, value)
   }
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
@@ -49,13 +69,25 @@ export default function TeamsListPage() {
         </Link>
       </div>
 
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Buscar por nome"
-        className="border border-gray-300 rounded p-2 mb-4 w-full max-w-md"
-      />
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder="Buscar por nome ou descrição"
+          className="border border-gray-300 rounded p-2 w-full md:w-1/2"
+        />
+
+        <select
+          value={filterActive}
+          onChange={(e) => handleFilterActive(e.target.value)}
+          className="border border-gray-300 rounded p-2 w-full md:w-1/4"
+        >
+          <option value="active">Ativos</option>
+          <option value="inactive">Inativos</option>
+          <option value="all">Todos</option>
+        </select>
+      </div>
 
       {error && <p className="text-red-600">{error}</p>}
 
@@ -98,6 +130,7 @@ export default function TeamsListPage() {
           ))}
         </tbody>
       </table>
+
       <ConfirmModal
         isOpen={confirmOpen}
         title="Confirmar Exclusão"
