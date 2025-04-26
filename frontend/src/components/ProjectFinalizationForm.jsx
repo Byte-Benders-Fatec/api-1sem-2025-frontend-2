@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import DocumentUploadForm from './DocumentUploadForm'
+import SuccessModal from '../components/SuccessModal'
 
-export default function ProjectFinalizationForm({ projectId, createdById, onComplete }) {
+export default function ProjectFinalizationForm({ projectId, createdById, onComplete, onBack, isEditing }) {
   const [availableUsers, setAvailableUsers] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(createdById)
   const [error, setError] = useState(null)
   const [showDocUpload, setShowDocUpload] = useState(false)
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -27,13 +31,19 @@ export default function ProjectFinalizationForm({ projectId, createdById, onComp
       await api.put(`/projects/${projectId}`, {
         responsible_user_id: selectedUserId
       })
-      onComplete()
+      setSuccessMessage(isEditing ? 'Alterações salvas com sucesso!' : 'Projeto concluído com sucesso!')
+      setShowSuccessModal(true)
     } catch (err) {
       console.error(err)
       setError('Erro ao definir responsável.')
     }
   }
-  // responsible_user_id
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false)
+    onComplete()
+  }
+
   return (
     <div className="max-w-3xl space-y-6">
       {error && <p className="text-red-600">{error}</p>}
@@ -72,14 +82,32 @@ export default function ProjectFinalizationForm({ projectId, createdById, onComp
         )}
       </div>
 
-      <div className="flex justify-end mt-8 gap-4">
+      {/* BOTÕES */}
+      <div className="flex justify-between mt-8 gap-4">
         <button
+          type="button"
+          onClick={onBack}
+          className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
+        >
+          ← Voltar
+        </button>
+
+        <button
+          type="button"
           onClick={handleSubmit}
           className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
         >
-          Finalizar Projeto
+          {isEditing ? 'Salvar Alterações' : 'Concluir Projeto'}
         </button>
       </div>
+
+      {/* MODAL DE SUCESSO */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Sucesso!"
+        message={successMessage}
+        onClose={handleSuccessClose}
+      />
     </div>
   )
 }

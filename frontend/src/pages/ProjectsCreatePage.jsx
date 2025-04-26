@@ -181,6 +181,8 @@ export default function ProjectCreatePage() {
           projectId={createdProjectId}
           createdById={createdById}
           onComplete={() => navigate('/projects')}
+          onBack={() => setStep(2)}
+          isEditing={false}
         />
       )}
 
