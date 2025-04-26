@@ -113,7 +113,7 @@ export default function AgencyEditPage() {
           <label className="text-gray-700">Agência ativa</label>
         </div>
 
-        <div className="flex space-x-12 mt-6">
+        <div className="flex justify-between mt-6">
             <button
                 type="button"
                 onClick={() => navigate(-1)}
