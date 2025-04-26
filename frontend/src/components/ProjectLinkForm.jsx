@@ -224,9 +224,9 @@ export default function ProjectLinkForm({ projectId, onComplete, onBack, isEditi
         <button
           type="button"
           onClick={handleNext}
-          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
         >
-          Próxima Etapa
+          Prosseguir →
         </button>
       </div>
 
