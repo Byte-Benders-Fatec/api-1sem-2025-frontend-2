@@ -80,7 +80,7 @@ export default function AreasEditPage() {
           <label className="text-gray-700">Área ativa</label>
         </div>
 
-        <div className="flex space-x-12 mt-6">
+        <div className="flex justify-between mt-6">
           <button
             type="button"
             onClick={() => navigate(-1)}
