@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Select from 'react-select'
 import api from '../services/api'
 import SuccessModal from '../components/SuccessModal'
 import ConfirmModal from '../components/ConfirmModal'
 
-export default function ProjectLinkForm({ projectId, onComplete }) {
+export default function ProjectLinkForm({ projectId, onComplete, onBack, isEditing }) {
+  const navigate = useNavigate()
+
   const [areas, setAreas] = useState([])
   const [teams, setTeams] = useState([])
   const [institutions, setInstitutions] = useState([])
@@ -65,6 +68,14 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
     }
     fetchData()
   }, [projectId])
+
+  const handleBack = () => {
+    if (isEditing) {
+      onBack()
+    } else {
+      navigate(`/projects/${projectId}/edit`)
+    }
+  }
 
   const handleAdd = async (item, type) => {
     if (!item) return
@@ -158,8 +169,7 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
     <div className="max-w-3xl space-y-8">
       {error && <p className="text-red-600">{error}</p>}
 
-      {/* Seções */}
-      {[
+      {[ 
         { label: 'Áreas *', items: areas, added: addedAreas, selected: selectedArea, setSelected: setSelectedArea, type: 'area', labelField: 'name' },
         { label: 'Times *', items: teams, added: addedTeams, selected: selectedTeam, setSelected: setSelectedTeam, type: 'team', labelField: 'name' },
         { label: 'Instituições *', items: institutions, added: addedInstitutions, selected: selectedInstitution, setSelected: setSelectedInstitution, type: 'institution', labelField: 'acronym' },
@@ -202,8 +212,17 @@ export default function ProjectLinkForm({ projectId, onComplete }) {
         </div>
       ))}
 
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-between mt-6">
         <button
+          type="button"
+          onClick={handleBack}
+          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+        >
+          ← Voltar
+        </button>
+
+        <button
+          type="button"
           onClick={handleNext}
           className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
         >

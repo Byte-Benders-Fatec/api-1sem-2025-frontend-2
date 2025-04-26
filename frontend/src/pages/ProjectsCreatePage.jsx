@@ -172,6 +172,7 @@ export default function ProjectCreatePage() {
         <ProjectLinkForm
           projectId={createdProjectId}
           onComplete={() => setStep(3)}
+          isEditing={false}
         />
       )}
 

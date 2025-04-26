@@ -195,7 +195,12 @@ export default function ProjectsEditPage() {
       )}
 
       {step === 2 && id && (
-        <ProjectLinkForm projectId={id} onComplete={() => setStep(3)} />
+        <ProjectLinkForm 
+          projectId={id} 
+          onComplete={() => setStep(3)}
+          onBack={() => setStep(1)}
+          isEditing={true}
+        />
       )}
 
       {step === 3 && id && createdById && (
