@@ -88,7 +88,7 @@ export default function InstitutionsViewPage() {
           <label className="text-gray-700">Instituição ativa</label>
         </div>
 
-        <div className="mt-6">
+        <div className="flex justify-end mt-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
