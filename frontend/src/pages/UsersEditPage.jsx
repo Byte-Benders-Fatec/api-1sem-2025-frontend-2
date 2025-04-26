@@ -113,7 +113,7 @@ export default function UserEditPage() {
           <label className="text-gray-700">Usuário ativo</label>
         </div>
 
-        <div className="flex space-x-12 mt-6">
+        <div className="flex justify-between mt-6">
 
             <button
                 type="button"
