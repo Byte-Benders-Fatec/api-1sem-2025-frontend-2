@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
+import { formatDateBR } from '../utils/formatDate'
 
 export default function ActivityTasksListPage() {
   const { id: activityId } = useParams()
@@ -13,6 +14,8 @@ export default function ActivityTasksListPage() {
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
+  const [spentBudget, setSpentBudget] = useState(0)
+  const [totalTimeSpent, setTotalTimeSpent] = useState(0)
 
   const fetchActivityAndTasks = async () => {
     try {
@@ -20,12 +23,42 @@ export default function ActivityTasksListPage() {
         api.get(`/activities/${activityId}`),
         api.get(`/activities/${activityId}/tasks`)
       ])
-      setActivity(activityRes.data)
-      setTasks(tasksRes.data)
-      setFiltered(tasksRes.data)
+      const activityData = activityRes.data
+      const tasksData = await Promise.all(
+        tasksRes.data.map(async (task) => {
+          if (task.user_id) {
+            try {
+              const userRes = await api.get(`/users/${task.user_id}`)
+              return { ...task, userName: userRes.data.name }
+            } catch (err) {
+              console.error('Erro ao buscar usuário da tarefa')
+              return { ...task, userName: 'Usuário não encontrado' }
+            }
+          } else {
+            return { ...task, userName: '—' }
+          }
+        })
+      )
+
+      setActivity(activityData)
+      setTasks(tasksData)
+      filterAndSearch(tasksData, search)
+
+      const totalSpent = tasksData.reduce(
+        (sum, task) => sum + (parseFloat(task.cost || 0)),
+        0
+      )
+      setSpentBudget(parseFloat(totalSpent.toFixed(2)))
+
+      const totalTime = tasksData.reduce(
+        (sum, task) => sum + (parseInt(task.time_spent_minutes || 0)),
+        0
+      )
+      setTotalTimeSpent(totalTime)
+
     } catch (err) {
       console.error(err)
-      setError('Erro ao carregar informações da atividade ou tarefas.')
+      setError('Erro ao carregar atividade ou tarefas.')
     }
   }
 
@@ -33,13 +66,18 @@ export default function ActivityTasksListPage() {
     fetchActivityAndTasks()
   }, [activityId])
 
-  const handleSearch = (text) => {
-    setSearch(text)
-    const lowerText = text.toLowerCase()
-    const results = tasks.filter(t =>
-      t.title.toLowerCase().includes(lowerText)
+  const filterAndSearch = (tasksList, searchText) => {
+    const lowerText = searchText.toLowerCase()
+    const results = tasksList.filter((t) =>
+      t.title.toLowerCase().includes(lowerText) ||
+      (t.userName && t.userName.toLowerCase().includes(lowerText))
     )
     setFiltered(results)
+  }
+
+  const handleSearch = (text) => {
+    setSearch(text)
+    filterAndSearch(tasks, text)
   }
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
@@ -50,6 +88,8 @@ export default function ActivityTasksListPage() {
   if (!activity) {
     return <div>Carregando...</div>
   }
+
+  const availableBudget = (parseFloat(activity.allocated_budget || 0) - spentBudget).toFixed(2)
 
   return (
     <div>
@@ -70,23 +110,28 @@ export default function ActivityTasksListPage() {
         </Link>
       </div>
 
-      <h2 className="text-xl font-bold text-green-700 mb-2">Tarefas da Atividade</h2>
+      <h2 className="text-xl font-bold text-green-700 mb-2">Atividade</h2>
       <div className="mb-6 space-y-1">
         <p><strong>Nome:</strong> {activity.name}</p>
         <p><strong>Descrição:</strong> {activity.description || '—'}</p>
         <p><strong>Status:</strong> {activity.status || '—'}</p>
+        <p><strong>Data de Início:</strong> {formatDateBR(activity.start_date)}</p>
+        <p><strong>Data de Término:</strong> {formatDateBR(activity.end_date)}</p>
         <p><strong>Orçamento Alocado:</strong> {activity.allocated_budget
           ? `R$ ${parseFloat(activity.allocated_budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
           : '—'}</p>
-        <p><strong>Data de Início:</strong> {activity.start_date?.split('T')[0] || '—'}</p>
-        <p><strong>Data de Término:</strong> {activity.end_date?.split('T')[0] || '—'}</p>
+        <p><strong>Valor Gasto Total:</strong> {`R$ ${spentBudget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
+        <p><strong>Valor Disponível:</strong> {`R$ ${parseFloat(availableBudget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
+        <p><strong>Tempo Gasto Total:</strong> {`${totalTimeSpent} minutos`}</p>
       </div>
+
+      <h2 className="text-xl font-bold text-green-700 mb-2">Tarefas:</h2>
 
       <input
         type="text"
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Buscar por título"
+        placeholder="Buscar por título ou autor"
         className="border border-gray-300 rounded p-2 mb-4 w-full max-w-md"
       />
 
@@ -96,6 +141,7 @@ export default function ActivityTasksListPage() {
         <thead className="bg-green-100">
           <tr>
             <th className="text-left p-2 border-b">Título</th>
+            <th className="text-left p-2 border-b">Registrado por</th>
             <th className="text-left p-2 border-b">Tempo (min)</th>
             <th className="text-left p-2 border-b">Custo</th>
             <th className="text-left p-2 border-b">Ações</th>
@@ -105,11 +151,10 @@ export default function ActivityTasksListPage() {
           {filtered.map((task) => (
             <tr key={task.id}>
               <td className="p-2 border-b">{task.title}</td>
+              <td className="p-2 border-b">{task.userName || '—'}</td>
               <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
               <td className="p-2 border-b">
-                R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', {
-                  minimumFractionDigits: 2
-                })}
+                R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </td>
               <td className="p-2 border-b space-x-2">
                 <Link
