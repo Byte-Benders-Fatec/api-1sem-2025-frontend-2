@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
+import { formatDateBR } from '../utils/formatDate'
 
 export default function ProjectActivitiesListPage() {
   const { id: projectId } = useParams()
@@ -13,6 +14,8 @@ export default function ProjectActivitiesListPage() {
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [filterActive, setFilterActive] = useState('active')
+  const [filterStartDate, setFilterStartDate] = useState('')
+  const [filterEndDate, setFilterEndDate] = useState('')
   const [error, setError] = useState(null)
 
   const fetchProjectAndActivities = async () => {
@@ -23,7 +26,7 @@ export default function ProjectActivitiesListPage() {
       ])
       setProject(projectRes.data)
       setActivities(activitiesRes.data)
-      filterAndSearch(activitiesRes.data, search, filterActive)
+      filterAndSearch(activitiesRes.data, search, filterActive, filterStartDate, filterEndDate)
     } catch (err) {
       console.error(err)
       setError('Erro ao carregar informações do projeto ou atividades.')
@@ -34,7 +37,7 @@ export default function ProjectActivitiesListPage() {
     fetchProjectAndActivities()
   }, [projectId])
 
-  const filterAndSearch = (activitiesList, searchText, activeFilter) => {
+  const filterAndSearch = (activitiesList, searchText, activeFilter, startDateFilter, endDateFilter) => {
     const lowerText = searchText.toLowerCase()
     let results = activitiesList.filter((a) =>
       a.name.toLowerCase().includes(lowerText) ||
@@ -47,17 +50,35 @@ export default function ProjectActivitiesListPage() {
       results = results.filter(a => !a.is_active)
     }
 
+    if (startDateFilter) {
+      results = results.filter(a => a.start_date && a.start_date.slice(0, 10) >= startDateFilter)
+    }
+
+    if (endDateFilter) {
+      results = results.filter(a => a.end_date && a.end_date.slice(0, 10) <= endDateFilter)
+    }
+
     setFiltered(results)
   }
 
   const handleSearch = (text) => {
     setSearch(text)
-    filterAndSearch(activities, text, filterActive)
+    filterAndSearch(activities, text, filterActive, filterStartDate, filterEndDate)
   }
 
   const handleFilterActive = (value) => {
     setFilterActive(value)
-    filterAndSearch(activities, search, value)
+    filterAndSearch(activities, search, value, filterStartDate, filterEndDate)
+  }
+
+  const handleStartDateChange = (value) => {
+    setFilterStartDate(value)
+    filterAndSearch(activities, search, filterActive, value, filterEndDate)
+  }
+
+  const handleEndDateChange = (value) => {
+    setFilterEndDate(value)
+    filterAndSearch(activities, search, filterActive, filterStartDate, value)
   }
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
@@ -95,13 +116,13 @@ export default function ProjectActivitiesListPage() {
         <p><strong>Descrição:</strong> {project.description || '—'}</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
+      <div className="flex flex-col md:flex-row gap-4 mb-2">
         <input
           type="text"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Buscar por nome ou status"
-          className="border border-gray-300 rounded p-2 w-full md:w-1/2"
+          className="border border-gray-300 rounded p-2 w-full md:w-1/4"
         />
 
         <select
@@ -115,6 +136,27 @@ export default function ProjectActivitiesListPage() {
         </select>
       </div>
 
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <div className="flex flex-col w-full md:w-1/4">
+          <label className="text-gray-700 mb-1">Data de Início (mínima)</label>
+          <input
+            type="date"
+            value={filterStartDate}
+            onChange={(e) => handleStartDateChange(e.target.value)}
+            className="border border-gray-300 rounded p-2"
+          />
+        </div>
+        <div className="flex flex-col w-full md:w-1/4">
+          <label className="text-gray-700 mb-1">Data de Término (máxima)</label>
+          <input
+            type="date"
+            value={filterEndDate}
+            onChange={(e) => handleEndDateChange(e.target.value)}
+            className="border border-gray-300 rounded p-2"
+          />
+        </div>
+      </div>
+
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
       <table className="w-full border bg-white rounded shadow-sm">
@@ -122,8 +164,9 @@ export default function ProjectActivitiesListPage() {
           <tr>
             <th className="text-left p-2 border-b">Nome</th>
             <th className="text-left p-2 border-b">Status</th>
-            <th className="text-left p-2 border-b">Orçamento da Atividade</th>
-            <th className="text-left p-2 border-b">Período</th>
+            <th className="text-left p-2 border-b">Orçamento</th>
+            <th className="text-left p-2 border-b">Data de Início</th>
+            <th className="text-left p-2 border-b">Data de Término</th>
             <th className="text-left p-2 border-b">Ativo</th>
             <th className="text-left p-2 border-b">Ações</th>
           </tr>
@@ -140,9 +183,8 @@ export default function ProjectActivitiesListPage() {
                     })}`
                   : '—'}
               </td>
-              <td className="p-2 border-b">
-                {activity.start_date?.split('T')[0]} até {activity.end_date?.split('T')[0]}
-              </td>
+              <td className="p-2 border-b">{formatDateBR(activity.start_date)}</td>
+              <td className="p-2 border-b">{formatDateBR(activity.end_date)}</td>
               <td className="p-2 border-b">{activity.is_active ? 'Sim' : 'Não'}</td>
               <td className="p-2 border-b space-x-2">
                 <Link
