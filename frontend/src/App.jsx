@@ -21,6 +21,8 @@ import ProjectsCreatePage from './pages/ProjectsCreatePage'
 import ProjectsEditPage from './pages/ProjectsEditPage'
 import ProjectsViewPage from './pages/ProjectsViewPage'
 
+import ProjectActivitiesListPage from './pages/ProjectActivitiesListPage'
+
 import AgenciesListPage from './pages/AgenciesListPage'
 import AgenciesCreatePage from './pages/AgenciesCreatePage'
 import AgenciesEditPage from './pages/AgenciesEditPage'
@@ -77,9 +79,10 @@ export default function App() {
           <Route path="users/:id/edit" element={<UsersEditPage />} />
           <Route path="users/create" element={<UsersCreatePage />} />
           <Route path="users" element={<UsersListPage />} />
-
+          
           <Route path="projects/:id/view" element={<ProjectsViewPage />} />
           <Route path="projects/:id/edit" element={<ProjectsEditPage />} />
+          <Route path="projects/:id/activities" element={<ProjectActivitiesListPage />} />
           <Route path="projects/create" element={<ProjectsCreatePage />} />
           <Route path="projects" element={<ProjectsListPage />} />          
           

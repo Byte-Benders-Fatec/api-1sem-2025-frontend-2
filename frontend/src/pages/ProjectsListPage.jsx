@@ -100,6 +100,7 @@ export default function ProjectsListPage() {
             <th className="text-left p-2 border-b">Descrição</th>
             <th className="text-left p-2 border-b">Status</th>
             <th className="text-left p-2 border-b">Ativo</th>
+            <th className="text-left p-2 border-b">Recursos</th>
             <th className="text-left p-2 border-b">Ações</th>
           </tr>
         </thead>
@@ -111,6 +112,14 @@ export default function ProjectsListPage() {
               <td className="p-2 border-b">{project.description}</td>
               <td className="p-2 border-b">{project.status || '-'}</td>
               <td className="p-2 border-b">{project.is_active ? 'Sim' : 'Não'}</td>
+              <td className="p-2 border-b space-x-2">
+                <Link
+                  to={`/projects/${project.id}/activities`}
+                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                >
+                  Atividades
+                </Link>
+              </td>
               <td className="p-2 border-b space-x-2">
                 <Link
                   to={`/projects/${project.id}/view`}
