@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
+import PublicProfileModal from '../components/PublicProfileModal'
 
 export default function UsersListPage() {
   const [users, setUsers] = useState([])
@@ -10,6 +11,8 @@ export default function UsersListPage() {
   const [search, setSearch] = useState('')
   const [filterActive, setFilterActive] = useState('active')
   const [error, setError] = useState(null)
+
+  const [selectedUserId, setSelectedUserId] = useState(null)
 
   const fetchUsers = async () => {
     try {
@@ -103,7 +106,14 @@ export default function UsersListPage() {
         <tbody>
           {filtered.map((user) => (
             <tr key={user.id}>
-              <td className="p-2 border-b">{user.name}</td>
+              <td className="p-2 border-b">
+                <button
+                  onClick={() => setSelectedUserId(user.id)}
+                  className="text-green-700 hover:underline"
+                >
+                  {user.name}
+                </button>
+              </td>
               <td className="p-2 border-b">{user.email}</td>
               <td className="p-2 border-b">{user.is_active ? 'Sim' : 'Não'}</td>
               <td className="p-2 border-b space-x-2">
@@ -137,6 +147,12 @@ export default function UsersListPage() {
         message="Tem certeza que deseja excluir este usuário?"
         onConfirm={handleDelete}
         onCancel={closeConfirmModal}
+      />
+
+      <PublicProfileModal
+        isOpen={!!selectedUserId}
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
       />
     </div>
   )
