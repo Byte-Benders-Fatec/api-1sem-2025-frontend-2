@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
+import PublicProfileModal from '../components/PublicProfileModal'
 import { formatDateBR } from '../utils/formatDate'
 
 export default function ActivityTasksListPage() {
@@ -16,6 +17,7 @@ export default function ActivityTasksListPage() {
   const [error, setError] = useState(null)
   const [spentBudget, setSpentBudget] = useState(0)
   const [totalTimeSpent, setTotalTimeSpent] = useState(0)
+  const [selectedUserId, setSelectedUserId] = useState(null)
 
   const fetchActivityAndTasks = async () => {
     try {
@@ -29,7 +31,7 @@ export default function ActivityTasksListPage() {
           if (task.user_id) {
             try {
               const userRes = await api.get(`/users/${task.user_id}`)
-              return { ...task, userName: userRes.data.name }
+              return { ...task, userName: userRes.data.name, userId: task.user_id }
             } catch (err) {
               console.error('Erro ao buscar usuário da tarefa')
               return { ...task, userName: 'Usuário não encontrado' }
@@ -151,7 +153,18 @@ export default function ActivityTasksListPage() {
           {filtered.map((task) => (
             <tr key={task.id}>
               <td className="p-2 border-b">{task.title}</td>
-              <td className="p-2 border-b">{task.userName || '—'}</td>
+              <td className="p-2 border-b">
+                {task.userId ? (
+                  <button
+                    onClick={() => setSelectedUserId(task.userId)}
+                    className="text-green-700 hover:underline"
+                  >
+                    {task.userName}
+                  </button>
+                ) : (
+                  '—'
+                )}
+              </td>
               <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
               <td className="p-2 border-b">
                 R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -187,6 +200,12 @@ export default function ActivityTasksListPage() {
         message="Tem certeza que deseja excluir esta tarefa?"
         onConfirm={handleDelete}
         onCancel={closeConfirmModal}
+      />
+
+      <PublicProfileModal
+        isOpen={!!selectedUserId}
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
       />
     </div>
   )
