@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import SuccessModal from '../components/SuccessModal'
+import ErrorModal from '../components/ErrorModal'
 
 export default function ActivityEditPage() {
-
   const { id } = useParams()
   const navigate = useNavigate()
 
@@ -16,7 +17,8 @@ export default function ActivityEditPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [isActive, setIsActive] = useState(true)
-  const [error, setError] = useState(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [errorModalData, setErrorModalData] = useState({ isOpen: false, title: '', message: '' })
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +40,11 @@ export default function ActivityEditPage() {
         setIsActive(a.is_active === 1)
       } catch (err) {
         console.error(err)
-        setError('Erro ao carregar dados da atividade.')
+        setErrorModalData({
+          isOpen: true,
+          title: 'Erro ao carregar atividade',
+          message: 'Tente novamente mais tarde.'
+        })
       }
     }
 
@@ -47,7 +53,6 @@ export default function ActivityEditPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(null)
 
     const payload = {
       name,
@@ -62,17 +67,21 @@ export default function ActivityEditPage() {
 
     try {
       await api.put(`/activities/${id}`, payload)
-      navigate('/activities')
+      setShowSuccessModal(true)
     } catch (err) {
       console.error(err)
-      setError('Erro ao atualizar atividade.')
+      const apiError = err.response?.data || {}
+      setErrorModalData({
+        isOpen: true,
+        title: apiError.error || 'Erro ao atualizar atividade',
+        message: apiError.details || 'Tente novamente mais tarde.'
+      })
     }
   }
 
   return (
     <div>
       <h2 className="text-xl font-bold text-green-700 mb-4">Editar Atividade</h2>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
 
       <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
         <div>
@@ -170,25 +179,36 @@ export default function ActivityEditPage() {
         </div>
 
         <div className="flex justify-between mt-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            ← Voltar
+          </button>
 
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-                ← Voltar
-            </button>
-
-            <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-                Salvar Alterações
-            </button>
-
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Salvar Alterações
+          </button>
         </div>
-
       </form>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Alterações Salvas!"
+        message="As alterações foram salvas com sucesso."
+        onClose={() => navigate(-1)}
+      />
+
+      <ErrorModal
+        isOpen={errorModalData.isOpen}
+        title={errorModalData.title}
+        message={errorModalData.message}
+        onClose={() => setErrorModalData({ isOpen: false, title: '', message: '' })}
+      />
     </div>
   )
 }
