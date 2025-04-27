@@ -22,6 +22,7 @@ import ProjectsEditPage from './pages/ProjectsEditPage'
 import ProjectsViewPage from './pages/ProjectsViewPage'
 
 import ProjectActivitiesListPage from './pages/ProjectActivitiesListPage'
+import ProjectActivityCreatePage from './pages/ProjectActivityCreatePage'
 
 import AgenciesListPage from './pages/AgenciesListPage'
 import AgenciesCreatePage from './pages/AgenciesCreatePage'
@@ -82,6 +83,7 @@ export default function App() {
           
           <Route path="projects/:id/view" element={<ProjectsViewPage />} />
           <Route path="projects/:id/edit" element={<ProjectsEditPage />} />
+          <Route path="projects/:id/activities/create" element={<ProjectActivityCreatePage />} />
           <Route path="projects/:id/activities" element={<ProjectActivitiesListPage />} />
           <Route path="projects/create" element={<ProjectsCreatePage />} />
           <Route path="projects" element={<ProjectsListPage />} />          
