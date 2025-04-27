@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../services/api'
+import SuccessModal from '../components/SuccessModal'
+import ErrorModal from '../components/ErrorModal'
 
 export default function ProjectActivityCreatePage() {
   const { id: projectId } = useParams()
@@ -14,7 +16,8 @@ export default function ProjectActivityCreatePage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [createdById, setCreatedById] = useState('')
-  const [error, setError] = useState(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [errorModalData, setErrorModalData] = useState({ isOpen: false, title: '', message: '' })
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,7 +30,11 @@ export default function ProjectActivityCreatePage() {
         setCreatedById(userRes.data.id)
       } catch (err) {
         console.error(err)
-        setError('Erro ao carregar dados iniciais.')
+        setErrorModalData({
+          isOpen: true,
+          title: 'Erro ao carregar dados iniciais',
+          message: 'Tente novamente mais tarde.'
+        })
       }
     }
 
@@ -36,7 +43,6 @@ export default function ProjectActivityCreatePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(null)
 
     const payload = {
       project_id: projectId,
@@ -51,10 +57,15 @@ export default function ProjectActivityCreatePage() {
 
     try {
       await api.post(`/activities`, payload)
-      navigate(`/projects/${projectId}/activities`)
+      setShowSuccessModal(true)
     } catch (err) {
       console.error(err)
-      setError('Erro ao criar atividade.')
+      const apiError = err.response?.data || {}
+      setErrorModalData({
+        isOpen: true,
+        title: apiError.error || 'Erro ao criar atividade',
+        message: apiError.details || 'Tente novamente mais tarde.'
+      })
     }
   }
 
@@ -65,7 +76,6 @@ export default function ProjectActivityCreatePage() {
   return (
     <div>
       <h2 className="text-xl font-bold text-green-700 mb-4">Criar Atividade</h2>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
 
       <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
         <div>
@@ -163,6 +173,20 @@ export default function ProjectActivityCreatePage() {
           </button>
         </div>
       </form>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Atividade Criada!"
+        message="A atividade foi criada com sucesso."
+        onClose={() => navigate(`/projects/${projectId}/activities`)}
+      />
+
+      <ErrorModal
+        isOpen={errorModalData.isOpen}
+        title={errorModalData.title}
+        message={errorModalData.message}
+        onClose={() => setErrorModalData({ isOpen: false, title: '', message: '' })}
+      />
     </div>
   )
 }
