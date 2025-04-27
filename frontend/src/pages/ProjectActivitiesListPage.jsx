@@ -19,6 +19,7 @@ export default function ProjectActivitiesListPage() {
   const [error, setError] = useState(null)
   const [responsibleUserName, setResponsibleUserName] = useState('')
   const [createdByName, setCreatedByName] = useState('')
+  const [spentBudget, setSpentBudget] = useState(0)
 
   const fetchProjectAndActivities = async () => {
     try {
@@ -49,6 +50,14 @@ export default function ProjectActivitiesListPage() {
         }
       }
 
+      // Calcular valor gasto
+      const totalSpent = activitiesRes.data.reduce(
+        (sum, activity) => sum + (parseFloat(activity.allocated_budget || 0)),
+        0
+      )
+      
+      setSpentBudget(parseFloat(totalSpent.toFixed(2)))
+      
     } catch (err) {
       console.error(err)
       setError('Erro ao carregar informações do projeto ou atividades.')
@@ -131,8 +140,8 @@ export default function ProjectActivitiesListPage() {
         </Link>
       </div>
 
-      <h2 className="text-xl font-bold text-green-700 mb-2">Atividades do Projeto</h2>
-      <div className="mb-6">
+      <h2 className="text-xl font-bold text-green-700 mb-2">Projeto</h2>
+      <div className="mb-6 space-y-1">
         <p><strong>Código:</strong> {project.code}</p>
         <p><strong>Nome:</strong> {project.name}</p>
         <p><strong>Descrição:</strong> {project.description || '—'}</p>
@@ -143,8 +152,13 @@ export default function ProjectActivitiesListPage() {
         <p><strong>Orçamento Total:</strong> {project.budget
           ? `R$ ${parseFloat(project.budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
           : '—'}</p>
+        <p><strong>Valor Alocado:</strong> {`R$ ${parseFloat(spentBudget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
+        <p><strong>Valor Disponível:</strong> {project.budget
+          ? `R$ ${(parseFloat(project.budget) - parseFloat(spentBudget)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+          : '—'}</p>
       </div>
-
+      
+      <h2 className="text-xl font-bold text-green-700 mb-2">Atividades:</h2>
       <div className="flex flex-col md:flex-row gap-4 mb-2">
         <input
           type="text"
@@ -187,7 +201,7 @@ export default function ProjectActivitiesListPage() {
       </div>
 
       {error && <p className="text-red-600 mb-4">{error}</p>}
-
+    
       <table className="w-full border bg-white rounded shadow-sm">
         <thead className="bg-green-100">
           <tr>
