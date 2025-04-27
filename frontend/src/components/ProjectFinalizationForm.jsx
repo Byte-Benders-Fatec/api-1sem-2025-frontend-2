@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
-import DocumentUploadForm from './DocumentUploadForm'
+import Select from 'react-select'
 import SuccessModal from '../components/SuccessModal'
 
 export default function ProjectFinalizationForm({ projectId, createdById, onComplete, onBack, isEditing }) {
   const [availableUsers, setAvailableUsers] = useState([])
-  const [selectedUserId, setSelectedUserId] = useState(createdById)
+  const [selectedUser, setSelectedUser] = useState(null)
   const [error, setError] = useState(null)
-  const [showDocUpload, setShowDocUpload] = useState(false)
 
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
@@ -16,7 +15,17 @@ export default function ProjectFinalizationForm({ projectId, createdById, onComp
     const fetchUsers = async () => {
       try {
         const res = await api.get(`/projects/${projectId}/users`)
-        setAvailableUsers(res.data)
+        const users = res.data
+
+        const options = users.map(user => ({
+          value: user.id,
+          label: `${user.name} (${user.email})`
+        }))
+
+        setAvailableUsers(options)
+
+        const defaultUser = options.find(opt => opt.value === createdById)
+        setSelectedUser(defaultUser || null)
       } catch (err) {
         console.error(err)
         setError('Erro ao carregar usuários disponíveis.')
@@ -24,12 +33,17 @@ export default function ProjectFinalizationForm({ projectId, createdById, onComp
     }
 
     fetchUsers()
-  }, [projectId])
+  }, [projectId, createdById])
 
   const handleSubmit = async () => {
+    if (!selectedUser) {
+      setError('Selecione um responsável para o projeto.')
+      return
+    }
+
     try {
       await api.put(`/projects/${projectId}`, {
-        responsible_user_id: selectedUserId
+        responsible_user_id: selectedUser.value
       })
       setSuccessMessage(isEditing ? 'Alterações salvas com sucesso!' : 'Projeto concluído com sucesso!')
       setShowSuccessModal(true)
@@ -50,36 +64,14 @@ export default function ProjectFinalizationForm({ projectId, createdById, onComp
 
       {/* RESPONSÁVEL */}
       <div>
-        <label className="block font-semibold text-gray-700">Responsável pelo Projeto *</label>
-        <select
-          className="w-full p-2 border rounded"
-          value={selectedUserId}
-          onChange={(e) => setSelectedUserId(e.target.value)}
-        >
-          {availableUsers.map(user => (
-            <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
-          ))}
-        </select>
-      </div>
-
-      {/* DOCUMENTOS (Opcional) */}
-      <div className="mt-6">
-        <button
-          onClick={() => setShowDocUpload(!showDocUpload)}
-          className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-        >
-          {showDocUpload ? 'Ocultar Upload de Documento' : 'Adicionar Documento (Opcional)'}
-        </button>
-        {showDocUpload && (
-          <div className="mt-4">
-            <DocumentUploadForm
-              EntityId={projectId}
-              EntityType="project"
-              onUploadSuccess={() => alert('Documento adicionado com sucesso!')}
-              onClose={() => setShowDocUpload(false)}
-            />
-          </div>
-        )}
+        <label className="block font-semibold text-gray-700 mb-2">Responsável pelo Projeto *</label>
+        <Select
+          options={availableUsers}
+          value={selectedUser}
+          onChange={(option) => setSelectedUser(option)}
+          placeholder="Selecione um responsável..."
+          isClearable
+        />
       </div>
 
       {/* BOTÕES */}
