@@ -17,6 +17,8 @@ export default function ProjectActivitiesListPage() {
   const [filterStartDate, setFilterStartDate] = useState('')
   const [filterEndDate, setFilterEndDate] = useState('')
   const [error, setError] = useState(null)
+  const [responsibleUserName, setResponsibleUserName] = useState('')
+  const [createdByName, setCreatedByName] = useState('')
 
   const fetchProjectAndActivities = async () => {
     try {
@@ -24,9 +26,29 @@ export default function ProjectActivitiesListPage() {
         api.get(`/projects/${projectId}`),
         api.get(`/projects/${projectId}/activities`)
       ])
-      setProject(projectRes.data)
+      const projectData = projectRes.data
+      setProject(projectData)
       setActivities(activitiesRes.data)
       filterAndSearch(activitiesRes.data, search, filterActive, filterStartDate, filterEndDate)
+
+      if (projectData.responsible_user_id) {
+        try {
+          const userRes = await api.get(`/users/${projectData.responsible_user_id}`)
+          setResponsibleUserName(userRes.data.name)
+        } catch (err) {
+          console.error('Erro ao carregar usuário responsável.')
+        }
+      }
+
+      if (projectData.created_by_id) {
+        try {
+          const creatorRes = await api.get(`/users/${projectData.created_by_id}`)
+          setCreatedByName(creatorRes.data.name)
+        } catch (err) {
+          console.error('Erro ao carregar usuário criador.')
+        }
+      }
+
     } catch (err) {
       console.error(err)
       setError('Erro ao carregar informações do projeto ou atividades.')
@@ -114,6 +136,11 @@ export default function ProjectActivitiesListPage() {
         <p><strong>Código:</strong> {project.code}</p>
         <p><strong>Nome:</strong> {project.name}</p>
         <p><strong>Descrição:</strong> {project.description || '—'}</p>
+        <p><strong>Responsável:</strong> {responsibleUserName || '—'}</p>
+        <p><strong>Criado por:</strong> {createdByName || '—'}</p>
+        <p><strong>Orçamento Total:</strong> {project.budget
+          ? `R$ ${parseFloat(project.budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+          : '—'}</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-2">
@@ -164,7 +191,7 @@ export default function ProjectActivitiesListPage() {
           <tr>
             <th className="text-left p-2 border-b">Nome</th>
             <th className="text-left p-2 border-b">Status</th>
-            <th className="text-left p-2 border-b">Orçamento</th>
+            <th className="text-left p-2 border-b">Orçamento da Atividade</th>
             <th className="text-left p-2 border-b">Data de Início</th>
             <th className="text-left p-2 border-b">Data de Término</th>
             <th className="text-left p-2 border-b">Ativo</th>
