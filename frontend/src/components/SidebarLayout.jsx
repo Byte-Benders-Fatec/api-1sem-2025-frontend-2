@@ -101,12 +101,13 @@ export default function SidebarLayout() {
           <Link to="/projects" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
             <FolderKanban className="w-5 h-5" /> <span>Projetos</span>
           </Link>
-          <Link to="/activities" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
+          {/* Testar usabilidada sem os recursos de atividades e tarefas no sidebar */}
+          {/* <Link to="/activities" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
             <ListTodo className="w-5 h-5" /> <span>Atividades</span>
           </Link>
           <Link to="/tasks" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
             <CheckSquare className="w-5 h-5" /> <span>Tarefas</span>
-          </Link>
+          </Link> */}
           <Link to="/institutions" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
             <School className="w-5 h-5" /> <span>Instituições</span>
           </Link>
