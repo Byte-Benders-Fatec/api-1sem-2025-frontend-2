@@ -37,7 +37,7 @@ export default function DocumentEditPage() {
 
     try {
       await api.put(`/documents/${id}`, payload)
-      navigate('/documents')
+      navigate(-1)
     } catch (err) {
       console.error(err)
       setError('Erro ao atualizar documento.')

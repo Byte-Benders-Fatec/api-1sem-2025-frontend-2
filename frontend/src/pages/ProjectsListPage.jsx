@@ -119,6 +119,12 @@ export default function ProjectsListPage() {
                 >
                   Atividades
                 </Link>
+                <Link
+                  to={`/projects/${project.id}/documents`}
+                  className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
+                >
+                  Documentos
+                </Link>
               </td>
               <td className="p-2 border-b space-x-2">
                 <Link
