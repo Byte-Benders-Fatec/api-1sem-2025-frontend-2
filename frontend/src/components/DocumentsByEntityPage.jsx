@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../services/api'
 import { downloadDocument, viewDocument } from '../utils/fileHelpers'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import DocumentUploadModal from '../components/DocumentUploadModal'
+import DocumentEditModal from '../components/DocumentEditModal'
 
 export default function DocumentsByEntityPage({ entityType }) {
   const { id: entityId } = useParams()
@@ -16,6 +17,7 @@ export default function DocumentsByEntityPage({ entityType }) {
   const [filterActive, setFilterActive] = useState('active')
   const [error, setError] = useState(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [editingDocId, setEditingDocId] = useState(null)
 
   const entityPaths = {
     project: 'projects',
@@ -140,12 +142,12 @@ export default function DocumentsByEntityPage({ entityType }) {
                 >
                   Visualizar
                 </button>
-                <Link
-                  to={`/documents/${doc.id}/edit`}
+                <button
+                  onClick={() => setEditingDocId(doc.id)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                 >
                   Editar
-                </Link>
+                </button>
                 <button
                   onClick={() => openConfirmModal(doc.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
@@ -172,6 +174,16 @@ export default function DocumentsByEntityPage({ entityType }) {
         entityId={entityId}
         onClose={() => setIsUploadModalOpen(false)}
         onSuccess={fetchDocuments}
+      />
+
+      <DocumentEditModal
+        isOpen={Boolean(editingDocId)}
+        documentId={editingDocId}
+        onClose={() => setEditingDocId(null)}
+        onSuccess={() => {
+          setEditingDocId(null)
+          fetchDocuments()
+        }}
       />
     </div>
   )
