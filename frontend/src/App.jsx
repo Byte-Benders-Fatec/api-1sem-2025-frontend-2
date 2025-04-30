@@ -46,6 +46,8 @@ import TasksCreatePage from './pages/TasksCreatePage'
 import TasksEditPage from './pages/TasksEditPage'
 import TasksViewPage from './pages/TasksViewPage'
 
+import TaskDocumentsListPage from './pages/TaskDocumentsListPage'
+
 import AreasListPage from './pages/AreasListPage'
 import AreasCreatePage from './pages/AreasCreatePage'
 import AreasEditPage from './pages/AreasEditPage'
@@ -111,6 +113,7 @@ export default function App() {
 
           <Route path="tasks/:id/view" element={<TasksViewPage />} />
           <Route path="tasks/:id/edit" element={<TasksEditPage />} />
+          <Route path="tasks/:id/documents" element={<TaskDocumentsListPage />} />
           <Route path="tasks/create" element={<TasksCreatePage />} />
           <Route path="tasks" element={<TasksListPage />} />
 

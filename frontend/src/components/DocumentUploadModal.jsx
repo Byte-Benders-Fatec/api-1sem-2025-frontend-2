@@ -11,6 +11,13 @@ export default function DocumentUploadModal({ isOpen, entityType, entityId, onCl
 
   if (!isOpen) return null
 
+  const entityPaths = {
+    project: 'projects',
+    activity: 'activities',
+    task: 'tasks'
+  }
+  const path = entityPaths[entityType]
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -38,7 +45,7 @@ export default function DocumentUploadModal({ isOpen, entityType, entityId, onCl
     formData.append('mime_type', file.type)
 
     try {
-      await api.post(`/${entityType}s/${entityId}/documents/upload`, formData, {
+      await api.post(`/${path}/${entityId}/documents/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 

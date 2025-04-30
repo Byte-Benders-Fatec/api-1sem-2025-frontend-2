@@ -32,8 +32,7 @@ export default function ActivityTasksListPage() {
             try {
               const userRes = await api.get(`/users/${task.user_id}`)
               return { ...task, userName: userRes.data.name, userId: task.user_id }
-            } catch (err) {
-              console.error('Erro ao buscar usuário da tarefa')
+            } catch {
               return { ...task, userName: 'Usuário não encontrado' }
             }
           } else {
@@ -46,16 +45,10 @@ export default function ActivityTasksListPage() {
       setTasks(tasksData)
       filterAndSearch(tasksData, search)
 
-      const totalSpent = tasksData.reduce(
-        (sum, task) => sum + (parseFloat(task.cost || 0)),
-        0
-      )
+      const totalSpent = tasksData.reduce((sum, task) => sum + (parseFloat(task.cost || 0)), 0)
       setSpentBudget(parseFloat(totalSpent.toFixed(2)))
 
-      const totalTime = tasksData.reduce(
-        (sum, task) => sum + (parseInt(task.time_spent_minutes || 0)),
-        0
-      )
+      const totalTime = tasksData.reduce((sum, task) => sum + (parseInt(task.time_spent_minutes || 0)), 0)
       setTotalTimeSpent(totalTime)
 
     } catch (err) {
@@ -87,9 +80,7 @@ export default function ActivityTasksListPage() {
     onSuccess: fetchActivityAndTasks
   })
 
-  if (!activity) {
-    return <div>Carregando...</div>
-  }
+  if (!activity) return <div>Carregando...</div>
 
   const availableBudget = (parseFloat(activity.allocated_budget || 0) - spentBudget).toFixed(2)
 
@@ -146,6 +137,7 @@ export default function ActivityTasksListPage() {
             <th className="text-left p-2 border-b">Registrado por</th>
             <th className="text-left p-2 border-b">Tempo (min)</th>
             <th className="text-left p-2 border-b">Custo</th>
+            <th className="text-left p-2 border-b">Recursos</th>
             <th className="text-left p-2 border-b">Ações</th>
           </tr>
         </thead>
@@ -161,13 +153,19 @@ export default function ActivityTasksListPage() {
                   >
                     {task.userName}
                   </button>
-                ) : (
-                  '—'
-                )}
+                ) : '—'}
               </td>
               <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
               <td className="p-2 border-b">
                 R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </td>
+              <td className="p-2 border-b">
+                <Link
+                  to={`/tasks/${task.id}/documents`}
+                  className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
+                >
+                  Documentos
+                </Link>
               </td>
               <td className="p-2 border-b space-x-2">
                 <Link
