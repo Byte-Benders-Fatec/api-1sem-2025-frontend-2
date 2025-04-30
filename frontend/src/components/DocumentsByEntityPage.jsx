@@ -6,6 +6,7 @@ import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import DocumentUploadModal from '../components/DocumentUploadModal'
 import DocumentEditModal from '../components/DocumentEditModal'
+import { formatDateBR } from '../utils/formatDate'
 
 export default function DocumentsByEntityPage({ entityType }) {
   const { id: entityId } = useParams()
@@ -18,6 +19,9 @@ export default function DocumentsByEntityPage({ entityType }) {
   const [error, setError] = useState(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [editingDocId, setEditingDocId] = useState(null)
+  const [entity, setEntity] = useState(null)
+  const [creatorName, setCreatorName] = useState('')
+  const [responsibleName, setResponsibleName] = useState('')
 
   const entityPaths = {
     project: 'projects',
@@ -37,8 +41,29 @@ export default function DocumentsByEntityPage({ entityType }) {
     }
   }
 
+  const fetchEntityDetails = async () => {
+    try {
+      const path = entityPaths[entityType]
+      const res = await api.get(`/${path}/${entityId}`)
+      setEntity(res.data)
+
+      // Buscar criador e responsável se existirem
+      if (res.data.created_by_id) {
+        const creatorRes = await api.get(`/users/${res.data.created_by_id}`)
+        setCreatorName(creatorRes.data.name)
+      }
+      if (res.data.responsible_user_id) {
+        const responsibleRes = await api.get(`/users/${res.data.responsible_user_id}`)
+        setResponsibleName(responsibleRes.data.name)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar entidade.')
+    }
+  }
+
   useEffect(() => {
     fetchDocuments()
+    fetchEntityDetails()
   }, [entityId])
 
   const filterAndSearch = (docs, text, active) => {
@@ -72,6 +97,31 @@ export default function DocumentsByEntityPage({ entityType }) {
     onSuccess: fetchDocuments
   })
 
+  const renderEntityHeader = () => {
+    if (!entity) return null
+
+    const labelMap = {
+      project: 'Projeto',
+      activity: 'Atividade',
+      task: 'Tarefa'
+    }
+
+    return (
+      <>
+        <h2 className="text-xl font-bold text-green-700 mb-2">{labelMap[entityType]}</h2>
+        <div className="mb-6 space-y-1">
+          {entity.code && <p><strong>Código:</strong> {entity.code}</p>}
+          <p><strong>Nome:</strong> {entity.name}</p>
+          {entity.description && <p><strong>Descrição:</strong> {entity.description}</p>}
+          {entity.start_date && <p><strong>Data de Início:</strong> {formatDateBR(entity.start_date)}</p>}
+          {entity.end_date && <p><strong>Data de Término:</strong> {formatDateBR(entity.end_date)}</p>}
+          {responsibleName && <p><strong>Responsável:</strong> {responsibleName}</p>}
+          {creatorName && <p><strong>Criado por:</strong> {creatorName}</p>}
+        </div>
+      </>
+    )
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -89,6 +139,8 @@ export default function DocumentsByEntityPage({ entityType }) {
           + Enviar Documento
         </button>
       </div>
+
+      {renderEntityHeader()}
 
       <h2 className="text-xl font-bold text-green-700 mb-4">Documentos</h2>
 
