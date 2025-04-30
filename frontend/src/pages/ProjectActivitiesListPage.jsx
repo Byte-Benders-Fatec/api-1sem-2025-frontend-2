@@ -228,12 +228,18 @@ export default function ProjectActivitiesListPage() {
               <td className="p-2 border-b">{formatDateBR(activity.start_date)}</td>
               <td className="p-2 border-b">{formatDateBR(activity.end_date)}</td>
               <td className="p-2 border-b">{activity.is_active ? 'Sim' : 'Não'}</td>
-              <td className="p-2 border-b">
+              <td className="p-2 border-b space-x-2">
                 <Link
                   to={`/activities/${activity.id}/tasks`}
                   className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
                 >
                   Tarefas
+                </Link>
+                <Link
+                  to={`/activities/${activity.id}/documents`}
+                  className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
+                >
+                  Documentos
                 </Link>
               </td>
               <td className="p-2 border-b space-x-2">

@@ -39,6 +39,8 @@ import ActivitiesViewPage from './pages/ActivitiesViewPage'
 import ActivityTasksListPage from './pages/ActivityTasksListPage'
 import ActivityTaskCreatePage from './pages/ActivityTaskCreatePage'
 
+import ActivityDocumentsListPage from './pages/ActivityDocumentsListPage'
+
 import TasksListPage from './pages/TasksListPage'
 import TasksCreatePage from './pages/TasksCreatePage'
 import TasksEditPage from './pages/TasksEditPage'
@@ -103,6 +105,7 @@ export default function App() {
           <Route path="activities/:id/edit" element={<ActivitiesEditPage />} />
           <Route path="activities/:id/tasks/create" element={<ActivityTaskCreatePage />} />
           <Route path="activities/:id/tasks" element={<ActivityTasksListPage />} />
+          <Route path="activities/:id/documents" element={<ActivityDocumentsListPage />} />
           <Route path="activities/create" element={<ActivitiesCreatePage />} />
           <Route path="activities" element={<ActivitiesListPage />} />
 
