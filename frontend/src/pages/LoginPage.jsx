@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import useAuth from '../hooks/useAuth'
+import ResetPasswordModal from '../components/ResetPasswordModal'
 
 export default function LoginPage() {
 
@@ -11,11 +12,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
-  const [step, setStep] = useState(1) // 1 = login, 2 = código OTP
+  const [step, setStep] = useState(1)
   const [loginToken, setLoginToken] = useState(null)
   const [error, setError] = useState(null)
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false)
 
-  // Redireciona se já estiver autenticado
   useEffect(() => {
     if (!loading && authenticated) {
       navigate('/home', { replace: true })
@@ -34,9 +35,7 @@ export default function LoginPage() {
         private: false
       })
 
-      // resposta: { message, code, login_token }
       const { code, login_token } = res.data
-
       setCode(code)
       setLoginToken(login_token)
       setStep(2)
@@ -73,58 +72,75 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-100">
-    <div className="w-full max-w-md bg-white p-6 rounded shadow">
-      <h2 className="text-2xl font-bold text-center text-green-700 mb-4">Login</h2>
+      <div className="w-full max-w-md bg-white p-6 rounded shadow">
+        <h2 className="text-2xl font-bold text-center text-green-700 mb-4">Login</h2>
 
-      {step === 1 && (
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="E-mail"
-            className="w-full p-2 border border-gray-300 rounded mb-3"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            className="w-full p-2 border border-gray-300 rounded mb-4"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
-          >
-            Entrar
-          </button>
-        </form>
-      )}
+        {step === 1 && (
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="email"
+              placeholder="E-mail"
+              className="w-full p-2 border border-gray-300 rounded mb-3"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-      {step === 2 && (
-        <form onSubmit={handleVerifyCode} className="space-y-4">
-          <p className="text-gray-700">Digite o código de verificação enviado por e-mail.</p>
-          <input
-            type="text"
-            placeholder="Código OTP"
-            className="w-full p-2 border border-gray-300 rounded text-center"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
-          >
-            Verificar Código
-          </button>
-        </form>
-      )}
+            <div className="flex justify-end mb-1">
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(true)}
+                className="text-sm text-green-700 hover:underline"
+              >
+                Esqueceu a senha?
+              </button>
+            </div>
 
-      {error && <p className="text-red-500 mb-2">{error}</p>}
-    </div>
+            <input
+              type="password"
+              placeholder="Senha"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            <button
+              type="submit"
+              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+            >
+              Entrar
+            </button>
+          </form>
+        )}
+
+        {step === 2 && (
+          <form onSubmit={handleVerifyCode} className="space-y-4">
+            <p className="text-gray-700">Digite o código de verificação enviado por e-mail.</p>
+            <input
+              type="text"
+              placeholder="Código OTP"
+              className="w-full p-2 border border-gray-300 rounded text-center"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+            >
+              Verificar Código
+            </button>
+          </form>
+        )}
+
+        {error && <p className="text-red-500 mt-4">{error}</p>}
+      </div>
+
+      <ResetPasswordModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+      />
     </div>
   )
 }
