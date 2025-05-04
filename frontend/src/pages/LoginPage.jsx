@@ -5,7 +5,6 @@ import useAuth from '../hooks/useAuth'
 import ResetPasswordModal from '../components/ResetPasswordModal'
 
 export default function LoginPage() {
-
   const { authenticated, loading } = useAuth()
   const navigate = useNavigate()
 
@@ -13,9 +12,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [step, setStep] = useState(1)
-  const [loginToken, setLoginToken] = useState(null)
   const [error, setError] = useState(null)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   useEffect(() => {
     if (!loading && authenticated) {
@@ -26,6 +25,10 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault()
     setError(null)
+    setIsLoggingIn(true)
+
+    localStorage.removeItem('login_token')
+    localStorage.removeItem('twofa_login_token')
 
     try {
       const res = await api.post(`/auth/login`, {
@@ -35,12 +38,19 @@ export default function LoginPage() {
         private: false
       })
 
-      const { code, login_token } = res.data
+      const { code, login_token, twofa_login_token } = res.data
+
       setCode(code)
-      setLoginToken(login_token)
       setStep(2)
+
+      localStorage.setItem('login_token', login_token)
+      if (twofa_login_token) {
+        localStorage.setItem('twofa_login_token', twofa_login_token)
+      }
     } catch (err) {
       setError('Credenciais inválidas.')
+    } finally {
+      setIsLoggingIn(false)
     }
   }
 
@@ -49,17 +59,29 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const res = await api.post(
-        `/auth/verify-code`,
-        { email, code },
-        {
-          headers: {
-            Authorization: `Bearer ${loginToken}`
-          }
+      const loginToken = localStorage.getItem('login_token')
+      const twofaLoginToken = localStorage.getItem('twofa_login_token')
+
+      const payload = {
+        email,
+        code,
+        type: 'login',
+        ...(twofaLoginToken ? { twofa_login_token: twofaLoginToken } : {})
+      }
+
+      const res = await api.post(`/auth/verify-code`, payload, {
+        headers: {
+          Authorization: `Bearer ${loginToken}`
         }
-      )
+      })
+
+      localStorage.removeItem('login_token')
+      localStorage.removeItem('twofa_login_token')
 
       localStorage.setItem('token', res.data.token)
+
+      alert('Login realizado com sucesso!');
+      
       window.location.href = '/home'
     } catch (err) {
       setError('Código inválido ou expirado.')
@@ -107,9 +129,12 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+              disabled={isLoggingIn}
+              className={`w-full text-white p-2 rounded ${
+                isLoggingIn ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+              }`}
             >
-              Entrar
+              {isLoggingIn ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
         )}
