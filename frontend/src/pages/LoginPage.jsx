@@ -69,7 +69,7 @@ export default function LoginPage() {
         ...(twofaLoginToken ? { twofa_login_token: twofaLoginToken } : {})
       }
 
-      const res = await api.post(`/auth/verify-code`, payload, {
+      const res = await api.post(`/auth/finalize-login`, payload, {
         headers: {
           Authorization: `Bearer ${loginToken}`
         }
@@ -108,6 +108,15 @@ export default function LoginPage() {
               required
             />
 
+            <input
+              type="password"
+              placeholder="Senha"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
             <div className="flex justify-end mb-1">
               <button
                 type="button"
@@ -117,15 +126,6 @@ export default function LoginPage() {
                 Esqueceu a senha?
               </button>
             </div>
-
-            <input
-              type="password"
-              placeholder="Senha"
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
 
             <button
               type="submit"
