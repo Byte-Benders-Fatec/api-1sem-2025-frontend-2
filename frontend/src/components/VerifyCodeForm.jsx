@@ -3,7 +3,7 @@ import api from '../services/api'
 
 const endpointMap = {
   login: '/auth/finalize-login',
-  password_reset: '/auth/verify-reset',
+  password_reset: '/auth/reset-password',
   password_change: '/auth/verify-change',
   critical_action: '/auth/verify-action'
 }
