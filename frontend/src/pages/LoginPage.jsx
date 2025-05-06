@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import useAuth from '../hooks/useAuth'
 import ResetPasswordModal from '../components/ResetPasswordModal'
+import VerifyCodeForm from '../components/VerifyCodeForm'
 
 export default function LoginPage() {
   const { authenticated, loading } = useAuth()
@@ -51,40 +52,6 @@ export default function LoginPage() {
       setError('Credenciais inválidas.')
     } finally {
       setIsLoggingIn(false)
-    }
-  }
-
-  const handleVerifyCode = async (e) => {
-    e.preventDefault()
-    setError(null)
-
-    try {
-      const loginToken = localStorage.getItem('login_token')
-      const twofaLoginToken = localStorage.getItem('twofa_login_token')
-
-      const payload = {
-        email,
-        code,
-        type: 'login',
-        ...(twofaLoginToken ? { twofa_login_token: twofaLoginToken } : {})
-      }
-
-      const res = await api.post(`/auth/finalize-login`, payload, {
-        headers: {
-          Authorization: `Bearer ${loginToken}`
-        }
-      })
-
-      localStorage.removeItem('login_token')
-      localStorage.removeItem('twofa_login_token')
-
-      localStorage.setItem('token', res.data.token)
-
-      alert('Login realizado com sucesso!');
-      
-      window.location.href = '/home'
-    } catch (err) {
-      setError('Código inválido ou expirado.')
     }
   }
 
@@ -140,23 +107,12 @@ export default function LoginPage() {
         )}
 
         {step === 2 && (
-          <form onSubmit={handleVerifyCode} className="space-y-4">
-            <p className="text-gray-700">Digite o código de verificação enviado por e-mail.</p>
-            <input
-              type="text"
-              placeholder="Código OTP"
-              className="w-full p-2 border border-gray-300 rounded text-center"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
-            >
-              Verificar Código
-            </button>
-          </form>
+          <VerifyCodeForm
+            email={email}
+            type="login"
+            inputCode={code}
+            onSuccessRedirect="/home"
+          />
         )}
 
         {error && <p className="text-red-500 mt-4">{error}</p>}
