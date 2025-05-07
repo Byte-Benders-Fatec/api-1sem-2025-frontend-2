@@ -62,48 +62,50 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-100">
       <div className="w-full max-w-md bg-white p-6 rounded shadow">
-        <h2 className="text-2xl font-bold text-center text-green-700 mb-4">Login</h2>
 
         {step === 1 && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="email"
-              placeholder="E-mail"
-              className="w-full p-2 border border-gray-300 rounded mb-3"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <>
+            <h2 className="text-2xl font-bold text-center text-green-700 mb-4">Login</h2>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <input
+                type="email"
+                placeholder="E-mail"
+                className="w-full p-2 border border-gray-300 rounded mb-3"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
 
-            <input
-              type="password"
-              placeholder="Senha"
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+              <input
+                type="password"
+                placeholder="Senha"
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-            <div className="flex justify-end mb-1">
+              <div className="flex justify-end mb-1">
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(true)}
+                  className="text-sm text-green-700 hover:underline"
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
+
               <button
-                type="button"
-                onClick={() => setIsResetModalOpen(true)}
-                className="text-sm text-green-700 hover:underline"
+                type="submit"
+                disabled={isLoggingIn}
+                className={`w-full text-white p-2 rounded ${
+                  isLoggingIn ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                }`}
               >
-                Esqueceu a senha?
+                {isLoggingIn ? 'Entrando...' : 'Entrar'}
               </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoggingIn}
-              className={`w-full text-white p-2 rounded ${
-                isLoggingIn ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-              }`}
-            >
-              {isLoggingIn ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
+            </form>
+          </>
         )}
 
         {step === 2 && (
@@ -111,6 +113,7 @@ export default function LoginPage() {
             email={email}
             type="login"
             inputCode={code}
+            contextLabel="Login"
             onSuccessRedirect="/home"
           />
         )}

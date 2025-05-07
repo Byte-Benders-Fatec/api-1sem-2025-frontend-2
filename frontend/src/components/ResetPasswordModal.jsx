@@ -88,22 +88,20 @@ export default function ResetPasswordModal({ isOpen, onClose }) {
         )}
 
         {step === 2 && (
-          <>
-            <h2 className="text-xl font-bold mb-4 text-green-700">Verificar Código</h2>
-            <VerifyCodeForm
-              email={email}
-              type="password_reset"
-              inputCode={code}
-              onSuccess={() => setShowSuccessModal(true)}
-              onError={(err) => {
-                setErrorModalData({
-                  isOpen: true,
-                  title: 'Falha na verificação',
-                  message: err?.message || 'Erro ao verificar código. Tente novamente.'
-                })
-              }}
-            />
-          </>
+          <VerifyCodeForm
+            email={email}
+            type="password_reset"
+            inputCode={code}
+            contextLabel="Recuperação de Acesso"
+            onSuccess={() => setShowSuccessModal(true)}
+            onError={(err) => {
+              setErrorModalData({
+                isOpen: true,
+                title: 'Falha na verificação',
+                message: err?.message || 'Erro ao verificar código. Tente novamente.'
+              })
+            }}
+          />
         )}
 
         <button

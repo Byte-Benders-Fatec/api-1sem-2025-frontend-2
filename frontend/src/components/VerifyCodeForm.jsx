@@ -15,7 +15,7 @@ const tokenKeyMap = {
   critical_action: 'twofa_critical_action_token'
 }
 
-export default function VerifyCodeForm({ email, type, inputCode = '', onSuccessRedirect = '', onSuccess, onError }) {
+export default function VerifyCodeForm({ email, type, inputCode = '', contextLabel = '', onSuccessRedirect = '', onSuccess, onError }) {
   const [code, setCode] = useState(inputCode)
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState(null)
@@ -66,26 +66,31 @@ export default function VerifyCodeForm({ email, type, inputCode = '', onSuccessR
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-      <p className="text-gray-700">Digite o código de verificação enviado por e-mail.</p>
-      <input
-        type="text"
-        placeholder="Código OTP"
-        className="w-full p-2 border border-gray-300 rounded text-center"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        required
-      />
-      <button
-        type="submit"
-        disabled={isVerifying}
-        className={`w-full text-white p-2 rounded ${
-          isVerifying ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-        }`}
-      >
-        {isVerifying ? 'Verificando...' : 'Verificar Código'}
-      </button>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-    </form>
+    <>
+      <h2 className="text-xl font-bold mb-4 text-green-700">
+        Verificar Código{contextLabel ? ` (${contextLabel})` : ''}
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <p className="text-gray-700">Digite o código de verificação enviado por e-mail.</p>
+        <input
+          type="text"
+          placeholder="Código OTP"
+          className="w-full p-2 border border-gray-300 rounded text-center"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          required
+        />
+        <button
+          type="submit"
+          disabled={isVerifying}
+          className={`w-full text-white p-2 rounded ${
+            isVerifying ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+          }`}
+        >
+          {isVerifying ? 'Verificando...' : 'Verificar Código'}
+        </button>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+      </form>
+    </>
   )
 }
