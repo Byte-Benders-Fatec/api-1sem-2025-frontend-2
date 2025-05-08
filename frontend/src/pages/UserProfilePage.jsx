@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import perfil from '../assets/perfil.png'
 import ChangePasswordModal from '../components/ChangePasswordModal'
+import ChangeEmailModal from '../components/ChangeEmailModal'
 
 export default function UserProfilePage() {
   const [userId, setUserId] = useState('')
@@ -14,6 +15,7 @@ export default function UserProfilePage() {
   const [error, setError] = useState(null)
   const [editMode, setEditMode] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -219,8 +221,8 @@ export default function UserProfilePage() {
               />
               <button
                 type="button"
-                disabled
-                className="px-4 py-2 bg-blue-500 text-white rounded opacity-50 cursor-not-allowed"
+                onClick={() => setShowEmailModal(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded"
               >
                 Alterar
               </button>
@@ -267,6 +269,10 @@ export default function UserProfilePage() {
       <ChangePasswordModal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
+      />
+      <ChangeEmailModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
       />
     </div>
   )
