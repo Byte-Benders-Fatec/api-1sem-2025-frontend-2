@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import perfil from '../assets/perfil.png'
+import ChangePasswordModal from '../components/ChangePasswordModal'
 
 export default function UserProfilePage() {
-
   const [userId, setUserId] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -12,9 +12,8 @@ export default function UserProfilePage() {
   const [photoPreview, setPhotoPreview] = useState(perfil)
   const [hasPhoto, setHasPhoto] = useState(false)
   const [error, setError] = useState(null)
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [editMode, setEditMode] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,7 +41,6 @@ export default function UserProfilePage() {
         })
 
         if (response?.status === 204) {
-          // Foto não encontrada (usuário não tem foto)
           setPhotoPreview(perfil)
           setHasPhoto(false)
         } else {
@@ -66,18 +64,9 @@ export default function UserProfilePage() {
     e.preventDefault()
     setError(null)
 
-    if (password && password !== confirmPassword) {
-      setError('As senhas não coincidem.')
-      return
-    }
-
     const payload = {
       name,
       email,
-    }
-
-    if (password) {
-      payload.password = password
     }
 
     try {
@@ -117,7 +106,7 @@ export default function UserProfilePage() {
 
       setEditMode(false)
     } catch (err) {
-      setError('Erro ao atualizar perfil.', err)
+      setError('Erro ao atualizar perfil.')
     }
   }
 
@@ -221,26 +210,6 @@ export default function UserProfilePage() {
             />
           </div>
 
-          <div>
-            <label className="block font-medium text-gray-700">Nova Senha (opcional)</label>
-            <input
-              type="password"
-              className="w-full border border-gray-300 rounded p-2"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block font-medium text-gray-700">Confirmar Nova Senha</label>
-            <input
-              type="password"
-              className="w-full border border-gray-300 rounded p-2"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-
           <div className="flex justify-between mt-6">
             <button
               type="button"
@@ -256,8 +225,23 @@ export default function UserProfilePage() {
               Salvar Alterações
             </button>
           </div>
+
+          <div className="flex justify-end mt-2">
+            <button
+              type="button"
+              onClick={() => setShowPasswordModal(true)}
+              className="text-sm text-green-700 hover:underline"
+            >
+              Alterar senha
+            </button>
+          </div>
         </form>
       )}
+
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
     </div>
   )
 }

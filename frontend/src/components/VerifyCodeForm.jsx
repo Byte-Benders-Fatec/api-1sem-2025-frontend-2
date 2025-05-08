@@ -4,7 +4,7 @@ import api from '../services/api'
 const endpointMap = {
   login: '/auth/finalize-login',
   password_reset: '/auth/reset-password',
-  password_change: '/auth/verify-change',
+  password_change: '/auth/change-password',
   critical_action: '/auth/verify-action'
 }
 
@@ -15,7 +15,16 @@ const tokenKeyMap = {
   critical_action: 'twofa_critical_action_token'
 }
 
-export default function VerifyCodeForm({ email, type, inputCode = '', contextLabel = '', onSuccessRedirect = '', onSuccess, onError }) {
+export default function VerifyCodeForm({
+  email,
+  type,
+  inputCode = '',
+  contextLabel = '',
+  extraPayload = {},
+  onSuccessRedirect = '',
+  onSuccess,
+  onError
+}) {
   const [code, setCode] = useState(inputCode)
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState(null)
@@ -33,7 +42,8 @@ export default function VerifyCodeForm({ email, type, inputCode = '', contextLab
         email,
         code,
         type,
-        ...(tokenValue ? { [tokenKey]: tokenValue } : {})
+        ...(tokenValue ? { [tokenKey]: tokenValue } : {}),
+        ...extraPayload // aqui incluímos os dados adicionais
       }
 
       const headers = {}
@@ -44,7 +54,7 @@ export default function VerifyCodeForm({ email, type, inputCode = '', contextLab
 
       const res = await api.post(endpointMap[type], payload, { headers })
 
-      // Limpeza após sucesso
+      // Limpeza de tokens
       localStorage.removeItem('login_token')
       Object.values(tokenKeyMap).forEach(key => localStorage.removeItem(key))
 
