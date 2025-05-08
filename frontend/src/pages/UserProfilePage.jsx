@@ -65,8 +65,7 @@ export default function UserProfilePage() {
     setError(null)
 
     const payload = {
-      name,
-      email,
+      name
     }
 
     try {
@@ -89,15 +88,11 @@ export default function UserProfilePage() {
         formData.append('name', photoFile.name)
         formData.append('mime_type', photoFile.type)
 
-        try {
-          await api.put(`/userphotos/${userId}`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          })
-        } catch (err) {
-          setError('Erro ao enviar a foto de perfil.')
-        }
+        await api.put(`/userphotos/${userId}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
       }
 
       if (hasPhoto && photoPreview === perfil) {
@@ -174,7 +169,21 @@ export default function UserProfilePage() {
           </div>
           <div>
             <label className="block font-medium text-gray-700">Email</label>
-            <p className="border border-gray-300 rounded p-2 bg-gray-100">{email}</p>
+            <input
+              type="email"
+              value={email}
+              disabled
+              className="w-full border border-gray-300 rounded p-2 bg-gray-100 cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <label className="block font-medium text-gray-700">Senha</label>
+            <input
+              type="password"
+              value="********"
+              disabled
+              className="w-full border border-gray-300 rounded p-2 bg-gray-100 cursor-not-allowed"
+            />
           </div>
 
           <div className="flex justify-end mt-6">
@@ -201,13 +210,40 @@ export default function UserProfilePage() {
 
           <div>
             <label className="block font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              className="w-full border border-gray-300 rounded p-2"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="flex gap-2">
+              <input
+                type="email"
+                className="w-full border border-gray-300 rounded p-2 bg-gray-100 cursor-not-allowed"
+                value={email}
+                disabled
+              />
+              <button
+                type="button"
+                disabled
+                className="px-4 py-2 bg-blue-500 text-white rounded opacity-50 cursor-not-allowed"
+              >
+                Alterar
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700">Senha</label>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                value="********"
+                disabled
+                className="w-full border border-gray-300 rounded p-2 bg-gray-100 cursor-not-allowed"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswordModal(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+              >
+                Alterar
+              </button>
+            </div>
           </div>
 
           <div className="flex justify-between mt-6">
@@ -223,16 +259,6 @@ export default function UserProfilePage() {
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Salvar Alterações
-            </button>
-          </div>
-
-          <div className="flex justify-end mt-2">
-            <button
-              type="button"
-              onClick={() => setShowPasswordModal(true)}
-              className="text-sm text-green-700 hover:underline"
-            >
-              Alterar senha
             </button>
           </div>
         </form>
