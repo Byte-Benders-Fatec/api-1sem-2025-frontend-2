@@ -66,9 +66,35 @@ export default function SidebarLayout() {
     }
 
   }, [user])
+
+  const allPaths = [
+    { name: "Times", icon: Users, endpoint: "/teams" },
+    { name: "Usuários", icon: User, endpoint: "/users" },
+    { name: "Projetos", icon: FolderKanban, endpoint: "/projects" },
+    { name: "Instituições", icon: School, endpoint: "/institutions" },
+    { name: "Agências", icon: Banknote, endpoint: "/agencies" },
+    { name: "Áreas", icon: Compass, endpoint: "/areas" },
+    { name: "Documentos", icon: FileText, endpoint: "/documents" },
+  ];
+
+  const adminAvailablePaths = ["all"];
+  const userAvailablePaths = ["Projetos"];
+
+  const getPathsByName = (pathNamesArray) => {
+    if (pathNamesArray[0] === "all") return allPaths;
+
+    return allPaths.filter((path) => pathNamesArray.includes(path.name));
+  };
+
+  const availablePathsByRole = {
+    "Super Admin": getPathsByName(adminAvailablePaths),
+    "Admin": getPathsByName(adminAvailablePaths),
+    "User": getPathsByName(userAvailablePaths),
+    "Viewer": getPathsByName(userAvailablePaths),
+  };
   
   return (
-    <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-green-700 text-white flex flex-col">
         <Link to="/home" >
           <div className="flex items-center gap-0 mb-6">
@@ -92,34 +118,15 @@ export default function SidebarLayout() {
         )}
 
         <nav className="flex-1 p-4 space-y-2">
-          <Link to="/teams" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <Users className="w-5 h-5" /> <span>Times</span>
-          </Link>
-          <Link to="/users" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <User className="w-5 h-5" /> <span>Usuários</span>
-          </Link>
-          <Link to="/projects" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <FolderKanban className="w-5 h-5" /> <span>Projetos</span>
-          </Link>
-          {/* Testar usabilidada sem os recursos de atividades e tarefas no sidebar */}
-          {/* <Link to="/activities" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <ListTodo className="w-5 h-5" /> <span>Atividades</span>
-          </Link>
-          <Link to="/tasks" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <CheckSquare className="w-5 h-5" /> <span>Tarefas</span>
-          </Link> */}
-          <Link to="/institutions" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <School className="w-5 h-5" /> <span>Instituições</span>
-          </Link>
-          <Link to="/agencies" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <Banknote className="w-5 h-5" /> <span>Agências</span>
-          </Link>
-          <Link to="/areas" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <Compass className="w-5 h-5" /> <span>Áreas</span>
-          </Link>
-          <Link to="/documents" className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
-            <FileText className="w-5 h-5" /> <span>Documentos</span>
-          </Link>
+          {user && availablePathsByRole[user.system_role].map(path => { 
+            const Icon = path.icon;
+            
+            return(
+              <Link to={path.endpoint} key={path.name} className="flex items-center gap-2 hover:bg-green-600 p-2 rounded">
+                <Icon className="w-5 h-5" /> <span>{path.name}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-green-600">
