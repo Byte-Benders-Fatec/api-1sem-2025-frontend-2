@@ -49,7 +49,7 @@ export default function ProjectActivityCreatePage() {
       name,
       start_date: startDate,
       end_date: endDate,
-      created_by: createdById,
+      created_by_id: createdById,
       ...(description && { description }),
       ...(status && { status }),
       ...(allocatedBudget && { allocated_budget: allocatedBudget })
