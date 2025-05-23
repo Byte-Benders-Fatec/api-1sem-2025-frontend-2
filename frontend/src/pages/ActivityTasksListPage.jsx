@@ -15,6 +15,8 @@ export default function ActivityTasksListPage() {
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
+  const [responsibleUserName, setResponsibleUserName] = useState('')
+  const [createdByName, setCreatedByName] = useState('')
   const [spentBudget, setSpentBudget] = useState(0)
   const [totalTimeSpent, setTotalTimeSpent] = useState(0)
   const [selectedUserId, setSelectedUserId] = useState(null)
@@ -44,6 +46,24 @@ export default function ActivityTasksListPage() {
       setActivity(activityData)
       setTasks(tasksData)
       filterAndSearch(tasksData, search)
+
+      if (activityData.responsible_user_id) {
+        try {
+          const userRes = await api.get(`/users/${activityData.responsible_user_id}`)
+          setResponsibleUserName(userRes.data.name)
+        } catch (err) {
+          console.error('Erro ao carregar usuário responsável.')
+        }
+      }
+
+      if (activityData.created_by_id) {
+        try {
+          const creatorRes = await api.get(`/users/${activityData.created_by_id}`)
+          setCreatedByName(creatorRes.data.name)
+        } catch (err) {
+          console.error('Erro ao carregar usuário criador.')
+        }
+      }
 
       const totalSpent = tasksData.reduce((sum, task) => sum + (parseFloat(task.cost || 0)), 0)
       setSpentBudget(parseFloat(totalSpent.toFixed(2)))
@@ -110,6 +130,8 @@ export default function ActivityTasksListPage() {
         <p><strong>Status:</strong> {activity.status || '—'}</p>
         <p><strong>Data de Início:</strong> {formatDateBR(activity.start_date)}</p>
         <p><strong>Data de Término:</strong> {formatDateBR(activity.end_date)}</p>
+        <p><strong>Responsável:</strong> {responsibleUserName || '—'}</p>
+        <p><strong>Criado por:</strong> {createdByName || '—'}</p>
         <p><strong>Orçamento Alocado:</strong> {activity.allocated_budget
           ? `R$ ${parseFloat(activity.allocated_budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
           : '—'}</p>
