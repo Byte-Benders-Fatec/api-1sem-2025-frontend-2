@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import SuccessModal from '../components/SuccessModal'
 import ErrorModal from '../components/ErrorModal'
+import Select from 'react-select'
 
 export default function ActivityEditPage() {
   const { id } = useParams()
   const navigate = useNavigate()
 
+  const [project, setProject] = useState(null)
   const [projects, setProjects] = useState([])
   const [projectId, setProjectId] = useState('')
   const [name, setName] = useState('')
@@ -17,17 +19,23 @@ export default function ActivityEditPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [createdBy, setCreatedBy] = useState('')
+  const [availableUsers, setAvailableUsers] = useState([])
+  const [activityUsers, setActivityUsers] = useState([])
+  const [selectedUser, setSelectedUser] = useState('')
+  const [responsibleUser, setResponsibleUser] = useState(null)
+
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [errorModalData, setErrorModalData] = useState({ isOpen: false, title: '', message: '' })
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [activityRes, projectsRes] = await Promise.all([
+        const [activityRes, projectsRes, meRes] = await Promise.all([
           api.get(`/activities/${id}`),
-          api.get(`/projects`)
+          api.get(`/projects`),
+          api.get(`/auth/me`)
         ])
-
         const a = activityRes.data
         setName(a.name)
         setDescription(a.description || '')
@@ -36,8 +44,22 @@ export default function ActivityEditPage() {
         setStartDate(a.start_date?.split('T')[0] || '')
         setEndDate(a.end_date?.split('T')[0] || '')
         setProjectId(a.project_id)
-        setProjects(projectsRes.data)
         setIsActive(a.is_active === 1)
+        setCreatedBy(meRes.data)
+        setProjects(projectsRes.data)
+
+        const [usersRes, availableUsersRes] = await Promise.all([
+          api.get(`/activities/${id}/users`),
+          api.get(`/activities/${id}/available-users`)
+        ])
+        setActivityUsers(usersRes.data)
+        setAvailableUsers(availableUsersRes.data)
+        if (a.responsible_user_id) {
+          const respUser = [...usersRes.data, meRes.data].find(u => u.id === a.responsible_user_id)
+          if (respUser) {
+            setResponsibleUser({ value: respUser.id, label: `${respUser.name} (${respUser.email})` })
+          }
+        }
       } catch (err) {
         console.error(err)
         setErrorModalData({
@@ -47,13 +69,34 @@ export default function ActivityEditPage() {
         })
       }
     }
-
     fetchData()
   }, [id])
 
+  const handleAddUser = () => {
+    if (!selectedUser) return
+    const user = availableUsers.find(u => u.id === selectedUser)
+    setActivityUsers(prev => [...prev, user])
+    setAvailableUsers(prev => prev.filter(u => u.id !== selectedUser))
+    setSelectedUser('')
+  }
+
+  const handleAddAllUsers = () => {
+    setActivityUsers(prev => [...prev, ...availableUsers])
+    setAvailableUsers([])
+    setSelectedUser('')
+  }
+
+  const handleRemoveUser = (userId) => {
+    const user = activityUsers.find(u => u.id === userId)
+    setAvailableUsers(prev => [...prev, user])
+    setActivityUsers(prev => prev.filter(u => u.id !== userId))
+    if (responsibleUser?.value === userId) {
+      setResponsibleUser(null)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     const payload = {
       name,
       project_id: projectId,
@@ -62,9 +105,9 @@ export default function ActivityEditPage() {
       ...(description && { description }),
       ...(status && { status }),
       ...(allocatedBudget && { allocated_budget: allocatedBudget }),
-      is_active: isActive ? 1 : 0
+      is_active: isActive ? 1 : 0,
+      responsible_user_id: responsibleUser?.value
     }
-
     try {
       await api.put(`/activities/${id}`, payload)
       setShowSuccessModal(true)
@@ -78,6 +121,13 @@ export default function ActivityEditPage() {
       })
     }
   }
+
+  const responsibleOptions = [
+    { value: createdBy?.id, label: `${createdBy?.name} (${createdBy?.email})` },
+    ...activityUsers
+      .filter(u => u.id !== createdBy?.id)
+      .map(u => ({ value: u.id, label: `${u.name} (${u.email})` }))
+  ]
 
   return (
     <div>
@@ -176,6 +226,73 @@ export default function ActivityEditPage() {
             onChange={(e) => setIsActive(e.target.checked)}
           />
           <label className="text-gray-700">Atividade ativa</label>
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Integrantes da Atividade ({activityUsers.length}/{activityUsers.length + availableUsers.length})
+          </h3>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <Select
+                value={availableUsers.find(u => u.id === selectedUser) ? {
+                  value: selectedUser,
+                  label: `${availableUsers.find(u => u.id === selectedUser)?.name} (${availableUsers.find(u => u.id === selectedUser)?.email})`
+                } : null}
+                onChange={(option) => setSelectedUser(option?.value || '')}
+                options={availableUsers.map(user => ({
+                  value: user.id,
+                  label: `${user.name} (${user.email})`
+                }))}
+                placeholder="Selecione um usuário..."
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddUser}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Adicionar
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAddAllUsers}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              disabled={availableUsers.length === 0}
+            >
+              Add todos
+            </button>
+          </div>
+
+          <div className="mt-4 max-h-48 overflow-y-auto border rounded">
+            <ul>
+              {activityUsers.map(user => (
+                <li key={user.id} className="flex justify-between items-center border-b py-1 px-2">
+                  <span>{user.name} ({user.email})</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveUser(user.id)}
+                    className="text-red-600 text-sm"
+                  >
+                    Remover
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <label className="block font-semibold text-gray-700 mb-2">Responsável pela Atividade *</label>
+          <Select
+            value={responsibleUser}
+            onChange={(option) => setResponsibleUser(option)}
+            options={responsibleOptions}
+            placeholder="Selecione o responsável..."
+            isClearable
+          />
         </div>
 
         <div className="flex justify-between mt-6">
