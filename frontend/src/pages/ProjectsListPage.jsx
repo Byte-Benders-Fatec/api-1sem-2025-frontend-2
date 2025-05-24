@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
+import IsUserAdmin from '../utils/cookie'
 
 export default function ProjectsListPage() {
   const [projects, setProjects] = useState([])
@@ -58,9 +59,11 @@ export default function ProjectsListPage() {
     onSuccess: fetchProjects
   })
 
+  const isUserAdmin = IsUserAdmin();
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
+      {isUserAdmin && <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-green-700">Projetos</h2>
         <Link
           to="/projects/create"
@@ -68,7 +71,7 @@ export default function ProjectsListPage() {
         >
           + Criar Novo
         </Link>
-      </div>
+      </div>}
 
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
@@ -119,12 +122,12 @@ export default function ProjectsListPage() {
                 >
                   Atividades
                 </Link>
-                <Link
+                {isUserAdmin && <Link
                   to={`/projects/${project.id}/documents`}
                   className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
                 >
                   Documentos
-                </Link>
+                </Link>}
               </td>
               <td className="p-2 border-b space-x-2">
                 <Link
@@ -133,18 +136,18 @@ export default function ProjectsListPage() {
                 >
                   Visualizar
                 </Link>
-                <Link
+                {isUserAdmin && <Link
                   to={`/projects/${project.id}/edit`}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                 >
                   Editar
-                </Link>
-                <button
+                </Link>}
+                {isUserAdmin && <button
                   onClick={() => openConfirmModal(project.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
-                </button>
+                </button>}
               </td>
             </tr>
           ))}

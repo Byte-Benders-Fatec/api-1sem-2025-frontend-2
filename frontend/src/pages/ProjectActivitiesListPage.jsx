@@ -4,6 +4,7 @@ import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import { formatDateBR } from '../utils/formatDate'
+import IsUserAdmin from '../utils/cookie'
 
 export default function ProjectActivitiesListPage() {
   const { id: projectId } = useParams()
@@ -115,6 +116,8 @@ export default function ProjectActivitiesListPage() {
     onSuccess: fetchProjectAndActivities
   })
 
+  const isUserAdmin = IsUserAdmin();
+
   if (!project) {
     return <div>Carregando...</div>
   }
@@ -130,12 +133,14 @@ export default function ProjectActivitiesListPage() {
           ← Voltar
         </button>
 
-        <Link
-          to={`/projects/${projectId}/activities/create`}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          + Criar Nova Atividade
-        </Link>
+        {isUserAdmin &&
+          <Link
+            to={`/projects/${projectId}/activities/create`}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            + Criar Nova Atividade
+          </Link>
+        }
       </div>
 
       <h2 className="text-xl font-bold text-green-700 mb-2">Projeto</h2>
