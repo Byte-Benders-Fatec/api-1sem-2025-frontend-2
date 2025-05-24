@@ -4,7 +4,7 @@ import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import { formatDateBR } from '../utils/formatDate'
-import { IsUserAdmin}  from '../utils/cookie'
+import { GetUserByJwtToken, IsUserAdmin}  from '../utils/cookie'
 
 export default function ProjectActivitiesListPage() {
   const { id: projectId } = useParams()
@@ -21,6 +21,8 @@ export default function ProjectActivitiesListPage() {
   const [responsibleUserName, setResponsibleUserName] = useState('')
   const [createdByName, setCreatedByName] = useState('')
   const [spentBudget, setSpentBudget] = useState(0)
+  const user = GetUserByJwtToken();
+  const isUserAdmin = IsUserAdmin();
 
   const fetchProjectAndActivities = async () => {
     try {
@@ -31,7 +33,7 @@ export default function ProjectActivitiesListPage() {
       const projectData = projectRes.data
       setProject(projectData)
       setActivities(activitiesRes.data)
-      filterAndSearch(activitiesRes.data, search, filterActive, filterStartDate, filterEndDate)
+      await filterAndSearch(activitiesRes.data, search, filterActive, filterStartDate, filterEndDate)
 
       if (projectData.responsible_user_id) {
         try {
@@ -67,8 +69,9 @@ export default function ProjectActivitiesListPage() {
     fetchProjectAndActivities()
   }, [projectId])
 
-  const filterAndSearch = (activitiesList, searchText, activeFilter, startDateFilter, endDateFilter) => {
+  const filterAndSearch = async (activitiesList, searchText, activeFilter, startDateFilter, endDateFilter) => {
     const lowerText = searchText.toLowerCase()
+    activitiesList = await filterActivitiesByUserPermission(activitiesList);
     let results = activitiesList.filter((a) =>
       a.name.toLowerCase().includes(lowerText) ||
       (a.status && a.status.toLowerCase().includes(lowerText))
@@ -90,6 +93,33 @@ export default function ProjectActivitiesListPage() {
 
     setFiltered(results)
   }
+
+  const filterActivitiesByUserPermission = async (activitiesList) => {
+    if (isUserAdmin) return activitiesList;
+
+    const result = [];
+
+    await Promise.all(
+      activitiesList.map(async (activity) => {
+        try {
+          const res = await api.get(`/activities/${activity.id}/users`);
+          const activityUsers = res.data;
+
+          const userIsInActivity = activityUsers.some(
+            (u) => u.id === user.id
+          );
+
+          if (userIsInActivity) {
+            result.push(activity);
+          }
+        } catch (e) {
+          console.error(`Erro ao verificar permissões da atividade ${activity.id}`);
+        }
+      })
+    );
+
+    return result;
+  };
 
   const handleSearch = (text) => {
     setSearch(text)
@@ -115,8 +145,6 @@ export default function ProjectActivitiesListPage() {
     entity: 'activities',
     onSuccess: fetchProjectAndActivities
   })
-
-  const isUserAdmin = IsUserAdmin();
 
   if (!project) {
     return <div>Carregando...</div>
