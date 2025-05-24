@@ -176,6 +176,7 @@ export default function ProjectActivitiesListPage() {
         <p><strong>Código:</strong> {project.code}</p>
         <p><strong>Nome:</strong> {project.name}</p>
         <p><strong>Descrição:</strong> {project.description || '—'}</p>
+        <p><strong>Status:</strong> {project.status || '—'}</p>
         <p><strong>Data de Início:</strong> {formatDateBR(project.start_date)}</p>
         <p><strong>Data de Término:</strong> {formatDateBR(project.end_date)}</p>
         <p><strong>Responsável:</strong> {responsibleUserName || '—'}</p>
