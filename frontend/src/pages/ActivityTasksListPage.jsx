@@ -118,14 +118,12 @@ export default function ActivityTasksListPage() {
           ← Voltar
         </button>
 
-      {isUserAdmin && 
         <Link
           to={`/activities/${activityId}/tasks/create`}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           + Criar Nova Tarefa
         </Link>
-      }
       </div>
 
       <h2 className="text-xl font-bold text-green-700 mb-2">Atividade</h2>
