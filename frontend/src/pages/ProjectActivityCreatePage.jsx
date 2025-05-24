@@ -205,13 +205,15 @@ export default function ProjectActivityCreatePage() {
         </div>
 
         <div className="mt-6">
-          <h3 className="text-lg font-semibold text-gray-700">Integrantes da Atividade</h3>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Integrantes da Atividade ({activityUsers.length}/{activityUsers.length + availableUsers.length})
+          </h3>
           <div className="flex gap-4">
             <div className="flex-1">
               <Select
                 value={availableUsers.find(u => u.id === selectedUser) ? {
                   value: selectedUser,
-                  label: availableUsers.find(u => u.id === selectedUser)?.name + ' (' + availableUsers.find(u => u.id === selectedUser)?.email + ')'
+                  label: `${availableUsers.find(u => u.id === selectedUser)?.name} (${availableUsers.find(u => u.id === selectedUser)?.email})`
                 } : null}
                 onChange={(option) => setSelectedUser(option?.value || '')}
                 options={availableUsers.map(user => ({
@@ -240,20 +242,22 @@ export default function ProjectActivityCreatePage() {
             </button>
           </div>
 
-          <ul className="mt-4">
-            {activityUsers.map(user => (
-              <li key={user.id} className="flex justify-between items-center border-b py-1">
-                <span>{user.name} ({user.email})</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveUser(user.id)}
-                  className="text-red-600 text-sm"
-                >
-                  Remover
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-4 max-h-48 overflow-y-auto border rounded">
+            <ul>
+              {activityUsers.map(user => (
+                <li key={user.id} className="flex justify-between items-center border-b py-1 px-2">
+                  <span>{user.name} ({user.email})</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveUser(user.id)}
+                    className="text-red-600 text-sm"
+                  >
+                    Remover
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className="mt-6">
