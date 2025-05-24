@@ -4,7 +4,7 @@ import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import { formatDateBR } from '../utils/formatDate'
-import IsUserAdmin from '../utils/cookie'
+import { IsUserAdmin}  from '../utils/cookie'
 
 export default function ProjectActivitiesListPage() {
   const { id: projectId } = useParams()

@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode"
 
-function getUserByJwtToken() {
+function GetUserByJwtToken() {
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -11,9 +11,9 @@ function getUserByJwtToken() {
 }
 
 function IsUserAdmin(){
-    const user = getUserByJwtToken();
+    const user = GetUserByJwtToken();
 
     return user?.system_role === "Admin" || user?.system_role === "Super Admin";
 }
 
-export default IsUserAdmin;
+export { GetUserByJwtToken, IsUserAdmin };

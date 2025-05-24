@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
-import IsUserAdmin from '../utils/cookie'
+import { GetUserByJwtToken, IsUserAdmin } from '../utils/cookie'
 
 export default function ProjectsListPage() {
   const [projects, setProjects] = useState([])
@@ -11,38 +11,66 @@ export default function ProjectsListPage() {
   const [search, setSearch] = useState('')
   const [filterActive, setFilterActive] = useState('active')
   const [error, setError] = useState(null)
+  
+  const user = GetUserByJwtToken();
+  const isUserAdmin = IsUserAdmin();
 
-  const fetchProjects = async () => {
-    try {
-      const response = await api.get(`/projects`)
-      setProjects(response.data)
-      filterAndSearch(response.data, search, filterActive)
-    } catch (err) {
-      console.error(err)
-      setError('Erro ao carregar projetos.')
-    }
+const fetchProjects = async () => {
+  try {
+    const response = await api.get(`/projects`);
+    setProjects(response.data);
+    await filterAndSearch(response.data, search, filterActive); 
+  } catch (err) {
+    console.error(err);
+    setError('Erro ao carregar projetos.');
+  }
+};
+
+useEffect(() => {
+  fetchProjects();
+}, []);
+
+const filterAndSearch = async (projectsList, searchText, activeFilter) => {
+  const lowerText = searchText.toLowerCase();
+
+  projectsList = await filterProjectsByUserPermission(projectsList);
+  let results = projectsList.filter((p) =>
+    p.name.toLowerCase().includes(lowerText) ||
+    p.code.toLowerCase().includes(lowerText) ||
+    (p.status && p.status.toLowerCase().includes(lowerText))
+  );
+
+  if (activeFilter === 'active') {
+    results = results.filter(p => p.is_active);
+  } else if (activeFilter === 'inactive') {
+    results = results.filter(p => !p.is_active);
   }
 
-  useEffect(() => {
-    fetchProjects()
-  }, [])
+  setFiltered(results);
+};
 
-  const filterAndSearch = (projectsList, searchText, activeFilter) => {
-    const lowerText = searchText.toLowerCase()
-    let results = projectsList.filter((p) =>
-      p.name.toLowerCase().includes(lowerText) ||
-      p.code.toLowerCase().includes(lowerText) ||
-      (p.status && p.status.toLowerCase().includes(lowerText))
-    )
 
-    if (activeFilter === 'active') {
-      results = results.filter(p => p.is_active)
-    } else if (activeFilter === 'inactive') {
-      results = results.filter(p => !p.is_active)
-    }
+  const filterProjectsByUserPermission = async (projectsList) => {
+  if (isUserAdmin) return projectsList;
 
-    setFiltered(results)
-  }
+  const projectsByUser = [];
+  await Promise.all(
+    projectsList.map(async (project) => {
+      const response = await api.get(`/projects/${project.id}/users`);
+      const projectUsers = response.data;
+
+      const userIsInProject = projectUsers.some(
+        (projectUser) => projectUser.id === user.id
+      );
+
+      if (userIsInProject) {
+        projectsByUser.push(project);
+      }
+    })
+  );
+
+  return projectsByUser;
+};
 
   const handleSearch = (text) => {
     setSearch(text)
@@ -58,8 +86,6 @@ export default function ProjectsListPage() {
     entity: 'projects',
     onSuccess: fetchProjects
   })
-
-  const isUserAdmin = IsUserAdmin();
 
   return (
     <div>
