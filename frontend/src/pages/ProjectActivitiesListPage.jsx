@@ -268,12 +268,14 @@ export default function ProjectActivitiesListPage() {
                 >
                   Tarefas
                 </Link>
-                <Link
-                  to={`/activities/${activity.id}/documents`}
-                  className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
-                >
-                  Documentos
-                </Link>
+                {isUserAdmin &&
+                  <Link
+                    to={`/activities/${activity.id}/documents`}
+                    className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
+                  >
+                    Documentos
+                  </Link>
+                }
               </td>
               <td className="p-2 border-b space-x-2">
                 <Link
@@ -282,18 +284,20 @@ export default function ProjectActivitiesListPage() {
                 >
                   Visualizar
                 </Link>
-                <Link
+                {isUserAdmin && <Link
                   to={`/activities/${activity.id}/edit`}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                 >
                   Editar
                 </Link>
-                <button
+                }
+                {isUserAdmin && <button
                   onClick={() => openConfirmModal(activity.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Excluir
                 </button>
+                }
               </td>
             </tr>
           ))}

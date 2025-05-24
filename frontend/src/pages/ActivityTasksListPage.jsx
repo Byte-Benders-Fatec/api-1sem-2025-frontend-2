@@ -5,6 +5,7 @@ import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import PublicProfileModal from '../components/PublicProfileModal'
 import { formatDateBR } from '../utils/formatDate'
+import { IsUserAdmin } from '../utils/cookie'
 
 export default function ActivityTasksListPage() {
   const { id: activityId } = useParams()
@@ -104,6 +105,8 @@ export default function ActivityTasksListPage() {
 
   const availableBudget = (parseFloat(activity.allocated_budget || 0) - spentBudget).toFixed(2)
 
+  const isUserAdmin = IsUserAdmin();
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -115,12 +118,14 @@ export default function ActivityTasksListPage() {
           ← Voltar
         </button>
 
+      {isUserAdmin && 
         <Link
           to={`/activities/${activityId}/tasks/create`}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           + Criar Nova Tarefa
         </Link>
+      }
       </div>
 
       <h2 className="text-xl font-bold text-green-700 mb-2">Atividade</h2>
@@ -159,7 +164,7 @@ export default function ActivityTasksListPage() {
             <th className="text-left p-2 border-b">Registrado por</th>
             <th className="text-left p-2 border-b">Tempo (min)</th>
             <th className="text-left p-2 border-b">Custo</th>
-            <th className="text-left p-2 border-b">Recursos</th>
+            {isUserAdmin && <th className="text-left p-2 border-b">Recursos</th>}
             <th className="text-left p-2 border-b">Ações</th>
           </tr>
         </thead>
@@ -181,14 +186,16 @@ export default function ActivityTasksListPage() {
               <td className="p-2 border-b">
                 R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </td>
-              <td className="p-2 border-b">
-                <Link
-                  to={`/tasks/${task.id}/documents`}
-                  className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
-                >
-                  Documentos
-                </Link>
-              </td>
+              {isUserAdmin && 
+                <td className="p-2 border-b">
+                  <Link
+                    to={`/tasks/${task.id}/documents`}
+                    className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
+                  >
+                    Documentos
+                  </Link>
+                </td>
+              }
               <td className="p-2 border-b space-x-2">
                 <Link
                   to={`/tasks/${task.id}/view`}
@@ -196,18 +203,24 @@ export default function ActivityTasksListPage() {
                 >
                   Visualizar
                 </Link>
-                <Link
-                  to={`/tasks/${task.id}/edit`}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                >
-                  Editar
-                </Link>
-                <button
-                  onClick={() => openConfirmModal(task.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                >
-                  Excluir
-                </button>
+
+                {isUserAdmin && 
+                  <Link
+                    to={`/tasks/${task.id}/edit`}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    Editar
+                  </Link>
+                }
+                
+                {isUserAdmin && 
+                  <button
+                    onClick={() => openConfirmModal(task.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Excluir
+                  </button>
+                }
               </td>
             </tr>
           ))}
