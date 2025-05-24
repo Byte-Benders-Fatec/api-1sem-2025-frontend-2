@@ -16,14 +16,20 @@ export default function ActivityViewPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [createdBy, setCreatedBy] = useState('')
+  const [availableUsers, setAvailableUsers] = useState([])
+  const [activityUsers, setActivityUsers] = useState([])
+  const [responsibleUser, setResponsibleUser] = useState(null)
+
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [activityRes, projectsRes] = await Promise.all([
+        const [activityRes, projectsRes, meRes] = await Promise.all([
           api.get(`/activities/${id}`),
-          api.get(`/projects`)
+          api.get(`/projects`),
+          api.get(`/auth/me`)
         ])
 
         const a = activityRes.data
@@ -36,6 +42,21 @@ export default function ActivityViewPage() {
         setProjectId(a.project_id)
         setProjects(projectsRes.data)
         setIsActive(a.is_active === 1)
+        setCreatedBy(meRes.data)
+
+        const [usersRes, availableUsersRes] = await Promise.all([
+          api.get(`/activities/${id}/users`),
+          api.get(`/activities/${id}/available-users`)
+        ])
+        setActivityUsers(usersRes.data)
+        setAvailableUsers(availableUsersRes.data)
+
+        if (a.responsible_user_id) {
+          const respUser = [...usersRes.data, meRes.data].find(u => u.id === a.responsible_user_id)
+          if (respUser) {
+            setResponsibleUser(`${respUser.name} (${respUser.email})`)
+          }
+        }
       } catch (err) {
         console.error(err)
         setError('Erro ao carregar dados da atividade.')
@@ -126,7 +147,7 @@ export default function ActivityViewPage() {
             readOnly
           />
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <input
             type="checkbox"
@@ -134,6 +155,32 @@ export default function ActivityViewPage() {
             disabled
           />
           <label className="text-gray-700">Atividade ativa</label>
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Integrantes da Atividade ({activityUsers.length}/{activityUsers.length + availableUsers.length})
+          </h3>
+
+          <div className="mt-2 max-h-48 overflow-y-auto border rounded">
+            <ul>
+              {activityUsers.map(user => (
+                <li key={user.id} className="flex justify-between items-center border-b py-1 px-2">
+                  <span>{user.name} ({user.email})</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <label className="block font-semibold text-gray-700 mb-2">Responsável pela Atividade *</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded bg-gray-100"
+            value={responsibleUser || 'Não definido'}
+            readOnly
+          />
         </div>
 
         <div className="flex justify-end mt-8">
