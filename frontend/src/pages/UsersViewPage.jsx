@@ -1,32 +1,52 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../services/api'
+import Select from 'react-select'
 
 export default function UserViewPage() {
-
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [systemRoles, setSystemRoles] = useState([])
+  const [selectedRole, setSelectedRole] = useState(null)
+  const [roleDescription, setRoleDescription] = useState('')
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndRoles = async () => {
       try {
-        const response = await api.get(`/users/${id}`)
-        setName(response.data.name)
-        setEmail(response.data.email)
-        setIsActive(response.data.is_active === 1)
+        const [userRes, rolesRes] = await Promise.all([
+          api.get(`/users/${id}`),
+          api.get('/systemroles')
+        ])
+
+        const user = userRes.data
+        setName(user.name)
+        setEmail(user.email)
+        setIsActive(user.is_active === 1)
+        setSystemRoles(rolesRes.data)
+
+        const role = rolesRes.data.find(r => r.id === user.system_role_id)
+        if (role) {
+          setSelectedRole({ value: role.id, label: role.name })
+          setRoleDescription(role.description)
+        }
       } catch (err) {
         console.error(err)
-        setError('Erro ao carregar usuário.')
+        setError('Erro ao carregar usuário ou permissões.')
       }
     }
 
-    fetchUser()
+    fetchUserAndRoles()
   }, [id])
+
+  const roleOptions = systemRoles.map(role => ({
+    value: role.id,
+    label: role.name
+  }))
 
   return (
     <div>
@@ -44,6 +64,7 @@ export default function UserViewPage() {
             readOnly
           />
         </div>
+
         <div>
           <label className="block font-medium text-gray-700">Email</label>
           <input
@@ -53,6 +74,22 @@ export default function UserViewPage() {
             readOnly
           />
         </div>
+
+        <div>
+          <label className="block font-medium text-gray-700">Papel do Sistema</label>
+          <Select
+            value={selectedRole}
+            options={roleOptions}
+            isDisabled
+            className="w-full"
+          />
+        </div>
+
+        {roleDescription && (
+          <div className="text-gray-600 text-sm p-2 border rounded bg-gray-50">
+            <strong>Descrição:</strong> {roleDescription}
+          </div>
+        )}
 
         <div className="flex items-center space-x-2">
           <input
