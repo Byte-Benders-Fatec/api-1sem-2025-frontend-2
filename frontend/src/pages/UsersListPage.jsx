@@ -11,30 +11,45 @@ export default function UsersListPage() {
   const [search, setSearch] = useState('')
   const [filterActive, setFilterActive] = useState('active')
   const [error, setError] = useState(null)
-
   const [selectedUserId, setSelectedUserId] = useState(null)
+  const [rolesMap, setRolesMap] = useState({})
 
-  const fetchUsers = async () => {
+  const fetchUsersAndRoles = async () => {
     try {
-      const response = await api.get(`/users`)
-      setUsers(response.data)
-      filterAndSearch(response.data, search, filterActive)
+      const [usersRes, rolesRes] = await Promise.all([
+        api.get('/users'),
+        api.get('/systemroles')
+      ])
+
+      const roles = rolesRes.data.reduce((acc, role) => {
+        acc[role.id] = role.name
+        return acc
+      }, {})
+
+      setRolesMap(roles)
+      setUsers(usersRes.data)
+      filterAndSearch(usersRes.data, search, filterActive)
     } catch (err) {
       console.error(err)
-      setError('Erro ao carregar usuários.')
+      setError('Erro ao carregar usuários ou papéis.')
     }
   }
 
   useEffect(() => {
-    fetchUsers()
+    fetchUsersAndRoles()
   }, [])
 
   const filterAndSearch = (usersList, searchText, activeFilter) => {
     const lowerText = searchText.toLowerCase()
-    let results = usersList.filter((user) =>
-      user.name.toLowerCase().includes(lowerText) ||
-      user.email.toLowerCase().includes(lowerText)
-    )
+
+    let results = usersList.filter((user) => {
+      const roleName = rolesMap[user.system_role_id] || ''
+      return (
+        user.name.toLowerCase().includes(lowerText) ||
+        user.email.toLowerCase().includes(lowerText) ||
+        roleName.toLowerCase().includes(lowerText)
+      )
+    })
 
     if (activeFilter === 'active') {
       results = results.filter(user => user.is_active)
@@ -57,7 +72,7 @@ export default function UsersListPage() {
 
   const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
     entity: 'users',
-    onSuccess: fetchUsers
+    onSuccess: fetchUsersAndRoles
   })
 
   return (
@@ -77,7 +92,7 @@ export default function UsersListPage() {
           type="text"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Buscar por nome ou e-mail"
+          placeholder="Buscar por nome, e-mail ou papel no sistema"
           className="border border-gray-300 rounded p-2 w-full md:w-1/2"
         />
 
@@ -99,6 +114,7 @@ export default function UsersListPage() {
           <tr>
             <th className="text-left p-2 border-b">Nome</th>
             <th className="text-left p-2 border-b">E-mail</th>
+            <th className="text-left p-2 border-b">Papel no Sistema</th>
             <th className="text-left p-2 border-b">Ativo</th>
             <th className="text-left p-2 border-b">Ações</th>
           </tr>
@@ -115,6 +131,7 @@ export default function UsersListPage() {
                 </button>
               </td>
               <td className="p-2 border-b">{user.email}</td>
+              <td className="p-2 border-b">{rolesMap[user.system_role_id] || '—'}</td>
               <td className="p-2 border-b">{user.is_active ? 'Sim' : 'Não'}</td>
               <td className="p-2 border-b space-x-2">
                 <Link
