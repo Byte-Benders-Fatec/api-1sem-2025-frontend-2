@@ -22,6 +22,7 @@ export default function DocumentsByEntityPage({ entityType }) {
   const [entity, setEntity] = useState(null)
   const [creatorName, setCreatorName] = useState('')
   const [responsibleName, setResponsibleName] = useState('')
+  const [userName, setUserName] = useState('')
 
   const entityPaths = {
     project: 'projects',
@@ -47,7 +48,7 @@ export default function DocumentsByEntityPage({ entityType }) {
       const res = await api.get(`/${path}/${entityId}`)
       setEntity(res.data)
 
-      // Buscar criador e responsável se existirem
+      // Buscar criador, responsável e usuário se existirem
       if (res.data.created_by_id) {
         const creatorRes = await api.get(`/users/${res.data.created_by_id}`)
         setCreatorName(creatorRes.data.name)
@@ -55,6 +56,10 @@ export default function DocumentsByEntityPage({ entityType }) {
       if (res.data.responsible_user_id) {
         const responsibleRes = await api.get(`/users/${res.data.responsible_user_id}`)
         setResponsibleName(responsibleRes.data.name)
+      }
+      if (res.data.user_id) {
+        const userRes = await api.get(`/users/${res.data.user_id}`)
+        setUserName(userRes.data.name)
       }
     } catch (err) {
       console.error('Erro ao carregar entidade.')
@@ -111,12 +116,15 @@ export default function DocumentsByEntityPage({ entityType }) {
         <h2 className="text-xl font-bold text-green-700 mb-2">{labelMap[entityType]}</h2>
         <div className="mb-6 space-y-1">
           {entity.code && <p><strong>Código:</strong> {entity.code}</p>}
-          <p><strong>Nome:</strong> {entity.name}</p>
+          {entity.name && <p><strong>Nome:</strong> {entity.name}</p>}
+          {entity.title && <p><strong>Título:</strong> {entity.title}</p>}
           {entity.description && <p><strong>Descrição:</strong> {entity.description}</p>}
           {entity.start_date && <p><strong>Data de Início:</strong> {formatDateBR(entity.start_date)}</p>}
           {entity.end_date && <p><strong>Data de Término:</strong> {formatDateBR(entity.end_date)}</p>}
+          {entity.date && <p><strong>Data:</strong> {formatDateBR(entity.date)}</p>}
           {responsibleName && <p><strong>Responsável:</strong> {responsibleName}</p>}
           {creatorName && <p><strong>Criado por:</strong> {creatorName}</p>}
+          {userName && <p><strong>Registrado por:</strong> {userName}</p>}
         </div>
       </>
     )
