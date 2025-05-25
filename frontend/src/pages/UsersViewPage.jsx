@@ -76,7 +76,7 @@ export default function UserViewPage() {
         </div>
 
         <div>
-          <label className="block font-medium text-gray-700">Papel do Sistema</label>
+          <label className="block font-medium text-gray-700">Papel no Sistema</label>
           <Select
             value={selectedRole}
             options={roleOptions}
