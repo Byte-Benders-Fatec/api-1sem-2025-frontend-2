@@ -160,6 +160,7 @@ export default function ActivityTasksListPage() {
           <tr>
             <th className="text-left p-2 border-b">Título</th>
             <th className="text-left p-2 border-b">Registrado por</th>
+            <th className="text-left p-2 border-b">Data</th>
             <th className="text-left p-2 border-b">Tempo (min)</th>
             <th className="text-left p-2 border-b">Custo</th>
             {isUserAdmin && <th className="text-left p-2 border-b">Recursos</th>}
@@ -180,11 +181,12 @@ export default function ActivityTasksListPage() {
                   </button>
                 ) : '—'}
               </td>
+              <td className="p-2 border-b">{task.date ? formatDateBR(task.date) : '—'}</td>
               <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
               <td className="p-2 border-b">
                 R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </td>
-              {isUserAdmin && 
+              {isUserAdmin &&
                 <td className="p-2 border-b">
                   <Link
                     to={`/tasks/${task.id}/documents`}
@@ -202,7 +204,7 @@ export default function ActivityTasksListPage() {
                   Visualizar
                 </Link>
 
-                {isUserAdmin && 
+                {isUserAdmin &&
                   <Link
                     to={`/tasks/${task.id}/edit`}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
@@ -210,8 +212,8 @@ export default function ActivityTasksListPage() {
                     Editar
                   </Link>
                 }
-                
-                {isUserAdmin && 
+
+                {isUserAdmin &&
                   <button
                     onClick={() => openConfirmModal(task.id)}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
