@@ -6,6 +6,7 @@ import useConfirmDelete from '../hooks/useConfirmDelete'
 import ConfirmModal from '../components/ConfirmModal'
 import DocumentUploadModal from '../components/DocumentUploadModal'
 import DocumentEditModal from '../components/DocumentEditModal'
+import PublicProfileModal from '../components/PublicProfileModal'
 import { formatDateBR } from '../utils/formatDate'
 
 export default function DocumentsByEntityPage({ entityType }) {
@@ -20,9 +21,10 @@ export default function DocumentsByEntityPage({ entityType }) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [editingDocId, setEditingDocId] = useState(null)
   const [entity, setEntity] = useState(null)
-  const [creatorName, setCreatorName] = useState('')
-  const [responsibleName, setResponsibleName] = useState('')
-  const [userName, setUserName] = useState('')
+  const [creator, setCreator] = useState(null)
+  const [responsible, setResponsible] = useState(null)
+  const [user, setUser] = useState(null)
+  const [selectedUserId, setSelectedUserId] = useState(null)
 
   const entityPaths = {
     project: 'projects',
@@ -51,15 +53,15 @@ export default function DocumentsByEntityPage({ entityType }) {
       // Buscar criador, responsável e usuário se existirem
       if (res.data.created_by_id) {
         const creatorRes = await api.get(`/users/${res.data.created_by_id}`)
-        setCreatorName(creatorRes.data.name)
+        setCreator(creatorRes.data)
       }
       if (res.data.responsible_user_id) {
         const responsibleRes = await api.get(`/users/${res.data.responsible_user_id}`)
-        setResponsibleName(responsibleRes.data.name)
+        setResponsible(responsibleRes.data)
       }
       if (res.data.user_id) {
         const userRes = await api.get(`/users/${res.data.user_id}`)
-        setUserName(userRes.data.name)
+        setUser(userRes.data)
       }
     } catch (err) {
       console.error('Erro ao carregar entidade.')
@@ -122,9 +124,30 @@ export default function DocumentsByEntityPage({ entityType }) {
           {entity.start_date && <p><strong>Data de Início:</strong> {formatDateBR(entity.start_date)}</p>}
           {entity.end_date && <p><strong>Data de Término:</strong> {formatDateBR(entity.end_date)}</p>}
           {entity.date && <p><strong>Data:</strong> {formatDateBR(entity.date)}</p>}
-          {responsibleName && <p><strong>Responsável:</strong> {responsibleName}</p>}
-          {creatorName && <p><strong>Criado por:</strong> {creatorName}</p>}
-          {userName && <p><strong>Registrado por:</strong> {userName}</p>}
+          {responsible && <p><strong>Responsável: </strong> 
+            <button
+              onClick={() => setSelectedUserId(responsible?.id)}
+              className="text-green-700 hover:underline"
+            >
+              {responsible?.name}
+            </button>
+          </p>}
+          {creator && <p><strong>Criado por: </strong>
+            <button
+              onClick={() => setSelectedUserId(creator?.id)}
+              className="text-green-700 hover:underline"
+            >
+              {creator?.name}
+            </button>
+          </p>}          
+          {user && <p><strong>Registrado por: </strong>
+            <button
+              onClick={() => setSelectedUserId(user?.id)}
+              className="text-green-700 hover:underline"
+            >
+              {user?.name}
+            </button>
+          </p>}
         </div>
       </>
     )
@@ -244,6 +267,12 @@ export default function DocumentsByEntityPage({ entityType }) {
           setEditingDocId(null)
           fetchDocuments()
         }}
+      />
+
+      <PublicProfileModal
+        isOpen={!!selectedUserId}
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
       />
     </div>
   )
