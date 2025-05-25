@@ -4,6 +4,7 @@ import PrivateRoute from './routes/PrivateRoute'
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import SidebarLayout from './components/SidebarLayout'
+import ChatbotAssistant from './components/ChatbotAssistent'
 import UserProfilePage from './pages/UserProfilePage'
 
 import TeamsListPage from './pages/TeamsListPage'
@@ -73,6 +74,7 @@ export default function App() {
           path="/"
           element={
             <PrivateRoute>
+              <ChatbotAssistant />
               <SidebarLayout />
             </PrivateRoute>
           }

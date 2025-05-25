@@ -8,6 +8,16 @@ const api = axios.create({
   withCredentials: AUTH_STRATEGY === 'cookie'
 })
 
+export const askAssistant = async (prompt) => {
+  try {
+    const response = await api.post('/ai/ask', { prompt }, { private: false });
+    return response.data.response;
+  } catch (err) {
+    console.error("Erro ao chamar o assistente:", err);
+    throw err;
+  }
+};
+
 // Interceptador para adicionar Authorization condicionalmente
 api.interceptors.request.use((config) => {
   const isPrivate = config.private !== false // padrão: true
