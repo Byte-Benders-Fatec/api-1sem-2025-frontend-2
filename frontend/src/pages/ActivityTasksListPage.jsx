@@ -52,18 +52,14 @@ export default function ActivityTasksListPage() {
         try {
           const userRes = await api.get(`/users/${activityData.responsible_user_id}`)
           setResponsibleUserName(userRes.data.name)
-        } catch (err) {
-          console.error('Erro ao carregar usuário responsável.')
-        }
+        } catch {}
       }
 
       if (activityData.created_by_id) {
         try {
           const creatorRes = await api.get(`/users/${activityData.created_by_id}`)
           setCreatedByName(creatorRes.data.name)
-        } catch (err) {
-          console.error('Erro ao carregar usuário criador.')
-        }
+        } catch {}
       }
 
       const totalSpent = tasksData.reduce((sum, task) => sum + (parseFloat(task.cost || 0)), 0)
@@ -104,8 +100,28 @@ export default function ActivityTasksListPage() {
   if (!activity) return <div>Carregando...</div>
 
   const availableBudget = (parseFloat(activity.allocated_budget || 0) - spentBudget).toFixed(2)
+  const isUserAdmin = IsUserAdmin()
 
-  const isUserAdmin = IsUserAdmin();
+  const getStatus = (taskDate) => {
+    if (!taskDate || !activity.start_date || !activity.end_date) return '—'
+
+    const taskD = new Date(taskDate)
+    const start = new Date(activity.start_date)
+    const end = new Date(activity.end_date)
+
+    if (taskD < start) return 'Adiantado'
+    if (taskD > end) return 'Atrasado'
+    return 'No prazo'
+  }
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'Adiantado': return 'text-blue-600 font-bold'
+      case 'No prazo': return 'text-green-600 font-bold'
+      case 'Atrasado': return 'text-red-600 font-bold'
+      default: return ''
+    }
+  }
 
   return (
     <div>
@@ -135,9 +151,7 @@ export default function ActivityTasksListPage() {
         <p><strong>Data de Término:</strong> {formatDateBR(activity.end_date)}</p>
         <p><strong>Responsável:</strong> {responsibleUserName || '—'}</p>
         <p><strong>Criado por:</strong> {createdByName || '—'}</p>
-        <p><strong>Orçamento Alocado:</strong> {activity.allocated_budget
-          ? `R$ ${parseFloat(activity.allocated_budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-          : '—'}</p>
+        <p><strong>Orçamento Alocado:</strong> {activity.allocated_budget ? `R$ ${parseFloat(activity.allocated_budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</p>
         <p><strong>Valor Gasto Total:</strong> {`R$ ${spentBudget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
         <p><strong>Valor Disponível:</strong> {`R$ ${parseFloat(availableBudget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
         <p><strong>Tempo Gasto Total:</strong> {`${totalTimeSpent} minutos`}</p>
@@ -161,6 +175,7 @@ export default function ActivityTasksListPage() {
             <th className="text-left p-2 border-b">Título</th>
             <th className="text-left p-2 border-b">Registrado por</th>
             <th className="text-left p-2 border-b">Data</th>
+            <th className="text-left p-2 border-b">Status</th>
             <th className="text-left p-2 border-b">Tempo (min)</th>
             <th className="text-left p-2 border-b">Custo</th>
             {isUserAdmin && <th className="text-left p-2 border-b">Recursos</th>}
@@ -168,62 +183,62 @@ export default function ActivityTasksListPage() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((task) => (
-            <tr key={task.id}>
-              <td className="p-2 border-b">{task.title}</td>
-              <td className="p-2 border-b">
-                {task.userId ? (
-                  <button
-                    onClick={() => setSelectedUserId(task.userId)}
-                    className="text-green-700 hover:underline"
-                  >
-                    {task.userName}
-                  </button>
-                ) : '—'}
-              </td>
-              <td className="p-2 border-b">{task.date ? formatDateBR(task.date) : '—'}</td>
-              <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
-              <td className="p-2 border-b">
-                R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </td>
-              {isUserAdmin &&
+          {filtered.map((task) => {
+            const status = getStatus(task.date)
+            return (
+              <tr key={task.id}>
+                <td className="p-2 border-b">{task.title}</td>
                 <td className="p-2 border-b">
-                  <Link
-                    to={`/tasks/${task.id}/documents`}
-                    className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
-                  >
-                    Documentos
-                  </Link>
+                  {task.userId ? (
+                    <button
+                      onClick={() => setSelectedUserId(task.userId)}
+                      className="text-green-700 hover:underline"
+                    >
+                      {task.userName}
+                    </button>
+                  ) : '—'}
                 </td>
-              }
-              <td className="p-2 border-b space-x-2">
-                <Link
-                  to={`/tasks/${task.id}/view`}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                >
-                  Visualizar
-                </Link>
-
+                <td className="p-2 border-b">{formatDateBR(task.date)}</td>
+                <td className={`p-2 border-b ${getStatusClass(status)}`}>{status}</td>
+                <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
+                <td className="p-2 border-b">R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                 {isUserAdmin &&
+                  <td className="p-2 border-b">
+                    <Link
+                      to={`/tasks/${task.id}/documents`}
+                      className="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded"
+                    >
+                      Documentos
+                    </Link>
+                  </td>
+                }
+                <td className="p-2 border-b space-x-2">
                   <Link
-                    to={`/tasks/${task.id}/edit`}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    to={`/tasks/${task.id}/view`}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                   >
-                    Editar
+                    Visualizar
                   </Link>
-                }
-
-                {isUserAdmin &&
-                  <button
-                    onClick={() => openConfirmModal(task.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Excluir
-                  </button>
-                }
-              </td>
-            </tr>
-          ))}
+                  {isUserAdmin && 
+                    <>
+                      <Link
+                        to={`/tasks/${task.id}/edit`}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        onClick={() => openConfirmModal(task.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  }
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
 
