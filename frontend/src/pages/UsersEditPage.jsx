@@ -1,68 +1,103 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import Select from 'react-select'
 import api from '../services/api'
+import SuccessModal from '../components/SuccessModal'
+import ErrorModal from '../components/ErrorModal'
 
 export default function UserEditPage() {
-
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [isActive, setIsActive] = useState(true)
-  const [error, setError] = useState(null)
+  const [systemRoles, setSystemRoles] = useState([])
+  const [selectedRole, setSelectedRole] = useState(null)
+  const [currentUserRoleLevel, setCurrentUserRoleLevel] = useState(0)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [errorModalData, setErrorModalData] = useState({ isOpen: false, title: '', message: '' })
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndRoles = async () => {
       try {
-        const response = await api.get(`/users/${id}`)
-        setName(response.data.name)
-        setEmail(response.data.email)
-        setIsActive(response.data.is_active === 1)
+        const [userRes, rolesRes, currentUserRes] = await Promise.all([
+          api.get(`/users/${id}`),
+          api.get('/systemroles'),
+          api.get('/auth/me')
+        ])
+
+        setName(userRes.data.name)
+        setEmail(userRes.data.email)
+        setIsActive(userRes.data.is_active === 1)
+        setSystemRoles(rolesRes.data)
+
+        setSelectedRole({
+          value: userRes.data.system_role_id,
+          label: rolesRes.data.find(r => r.id === userRes.data.system_role_id)?.name || ''
+        })
+
+        setCurrentUserRoleLevel(
+          rolesRes.data.find(role => role.name === currentUserRes.data.system_role)?.level || 0
+        )
       } catch (err) {
-        console.error(err)
-        setError('Erro ao carregar usuário.')
+        setErrorModalData({
+          isOpen: true,
+          title: 'Erro',
+          message: 'Erro ao carregar informações do usuário ou permissões.'
+        })
       }
     }
 
-    fetchUser()
+    fetchUserAndRoles()
   }, [id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(null)
 
-    if (password && password !== confirmPassword) {
-      setError('As senhas não coincidem.')
+    if (!selectedRole) {
+      setErrorModalData({
+        isOpen: true,
+        title: 'Validação',
+        message: 'Selecione um papel para o usuário.'
+      })
       return
     }
 
     const payload = {
       name,
       email,
+      system_role_id: selectedRole.value,
       is_active: isActive ? 1 : 0
-    }
-
-    if (password) {
-      payload.password = password
     }
 
     try {
       await api.put(`/users/${id}`, payload)
-      navigate('/users')
+      setShowSuccessModal(true)
     } catch (err) {
-      console.error(err)
-      setError('Erro ao atualizar usuário.')
+      setErrorModalData({
+        isOpen: true,
+        title: 'Erro ao atualizar usuário',
+        message: 'Tente novamente mais tarde.'
+      })
     }
   }
+
+  const availableRoles = systemRoles.filter(role =>
+    currentUserRoleLevel === 100 || role.level < currentUserRoleLevel
+  )
+
+  const roleOptions = availableRoles.map(role => ({
+    value: role.id,
+    label: role.name,
+    description: role.description
+  }))
+
+  const selectedRoleDescription = selectedRole ? roleOptions.find(opt => opt.value === selectedRole.value)?.description : ''
 
   return (
     <div>
       <h2 className="text-xl font-bold text-green-700 mb-4">Editar Usuário</h2>
-
-      {error && <p className="text-red-600 mb-4">{error}</p>}
 
       <form onSubmit={handleSubmit} className="max-w-md space-y-4">
         <div>
@@ -75,6 +110,7 @@ export default function UserEditPage() {
             required
           />
         </div>
+
         <div>
           <label className="block font-medium text-gray-700">Email</label>
           <input
@@ -85,24 +121,23 @@ export default function UserEditPage() {
             required
           />
         </div>
+
         <div>
-          <label className="block font-medium text-gray-700">Nova Senha (opcional)</label>
-          <input
-            type="password"
-            className="w-full border border-gray-300 rounded p-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+          <label className="block font-medium text-gray-700">Papel do Sistema *</label>
+          <Select
+            value={selectedRole}
+            onChange={setSelectedRole}
+            options={roleOptions}
+            placeholder="Selecione um papel..."
+            className="w-full"
           />
         </div>
-        <div>
-          <label className="block font-medium text-gray-700">Confirmar Nova Senha</label>
-          <input
-            type="password"
-            className="w-full border border-gray-300 rounded p-2"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </div>
+
+        {selectedRoleDescription && (
+          <div className="text-gray-600 text-sm p-2 border rounded bg-gray-50">
+            <strong>Descrição:</strong> {selectedRoleDescription}
+          </div>
+        )}
 
         <div className="flex items-center space-x-2">
           <input
@@ -114,25 +149,36 @@ export default function UserEditPage() {
         </div>
 
         <div className="flex justify-between mt-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            ← Voltar
+          </button>
 
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-                ← Voltar
-            </button>
-
-            <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-                Salvar Alterações
-            </button>
-
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Salvar Alterações
+          </button>
         </div>
-
       </form>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Usuário Atualizado!"
+        message="As alterações foram salvas com sucesso."
+        onClose={() => navigate('/users')}
+      />
+
+      <ErrorModal
+        isOpen={errorModalData.isOpen}
+        title={errorModalData.title}
+        message={errorModalData.message}
+        onClose={() => setErrorModalData({ isOpen: false, title: '', message: '' })}
+      />
     </div>
   )
 }
