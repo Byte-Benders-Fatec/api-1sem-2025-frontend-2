@@ -15,6 +15,9 @@ export default function ActivityTasksListPage() {
   const [tasks, setTasks] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
+  const [filterStartDate, setFilterStartDate] = useState('')
+  const [filterEndDate, setFilterEndDate] = useState('')
+  const [filterStatus, setFilterStatus] = useState('Todos')
   const [error, setError] = useState(null)
   const [responsibleUserName, setResponsibleUserName] = useState('')
   const [createdByName, setCreatedByName] = useState('')
@@ -46,7 +49,7 @@ export default function ActivityTasksListPage() {
 
       setActivity(activityData)
       setTasks(tasksData)
-      filterAndSearch(tasksData, search)
+      filterAndSearch(tasksData, search, filterStartDate, filterEndDate, filterStatus)
 
       if (activityData.responsible_user_id) {
         try {
@@ -78,36 +81,12 @@ export default function ActivityTasksListPage() {
     fetchActivityAndTasks()
   }, [activityId])
 
-  const filterAndSearch = (tasksList, searchText) => {
-    const lowerText = searchText.toLowerCase()
-    const results = tasksList.filter((t) =>
-      t.title.toLowerCase().includes(lowerText) ||
-      (t.userName && t.userName.toLowerCase().includes(lowerText))
-    )
-    setFiltered(results)
-  }
-
-  const handleSearch = (text) => {
-    setSearch(text)
-    filterAndSearch(tasks, text)
-  }
-
-  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
-    entity: 'tasks',
-    onSuccess: fetchActivityAndTasks
-  })
-
-  if (!activity) return <div>Carregando...</div>
-
-  const availableBudget = (parseFloat(activity.allocated_budget || 0) - spentBudget).toFixed(2)
-  const isUserAdmin = IsUserAdmin()
-
   const getStatus = (taskDate) => {
-    if (!taskDate || !activity.start_date || !activity.end_date) return '—'
+    if (!taskDate || !activity?.start_date || !activity?.end_date) return '—'
 
     const taskD = new Date(taskDate)
-    const start = new Date(activity.start_date)
-    const end = new Date(activity.end_date)
+    const start = new Date(activity?.start_date)
+    const end = new Date(activity?.end_date)
 
     if (taskD < start) return 'Adiantado'
     if (taskD > end) return 'Atrasado'
@@ -122,6 +101,55 @@ export default function ActivityTasksListPage() {
       default: return ''
     }
   }
+
+  const filterAndSearch = (tasksList, searchText, startDate, endDate, statusFilter) => {
+    const lowerText = searchText.toLowerCase()
+
+    const results = tasksList.filter((t) => {
+      const matchesSearch = t.title.toLowerCase().includes(lowerText) || (t.userName && t.userName.toLowerCase().includes(lowerText))
+
+      const taskDate = t.date ? t.date.slice(0, 10) : ''
+      const status = getStatus(t.date)
+
+      const matchesStartDate = !startDate || taskDate >= startDate
+      const matchesEndDate = !endDate || taskDate <= endDate
+      const matchesStatus = statusFilter === 'Todos' || status === statusFilter
+
+      return matchesSearch && matchesStartDate && matchesEndDate && matchesStatus
+    })
+
+    setFiltered(results)
+  }
+
+  const handleSearch = (text) => {
+    setSearch(text)
+    filterAndSearch(tasks, text, filterStartDate, filterEndDate, filterStatus)
+  }
+
+  const handleFilterStartDate = (date) => {
+    setFilterStartDate(date)
+    filterAndSearch(tasks, search, date, filterEndDate, filterStatus)
+  }
+
+  const handleFilterEndDate = (date) => {
+    setFilterEndDate(date)
+    filterAndSearch(tasks, search, filterStartDate, date, filterStatus)
+  }
+
+  const handleFilterStatus = (status) => {
+    setFilterStatus(status)
+    filterAndSearch(tasks, search, filterStartDate, filterEndDate, status)
+  }
+
+  const { confirmOpen, openConfirmModal, closeConfirmModal, handleDelete } = useConfirmDelete({
+    entity: 'tasks',
+    onSuccess: fetchActivityAndTasks
+  })
+
+  if (!activity) return <div>Carregando...</div>
+
+  const availableBudget = (parseFloat(activity.allocated_budget || 0) - spentBudget).toFixed(2)
+  const isUserAdmin = IsUserAdmin()
 
   return (
     <div>
@@ -158,14 +186,47 @@ export default function ActivityTasksListPage() {
       </div>
 
       <h2 className="text-xl font-bold text-green-700 mb-2">Tarefas:</h2>
+      <div className="flex flex-col md:flex-row gap-4 mb-2">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder="Buscar por título ou autor"
+          className="border border-gray-300 rounded p-2 w-full md:w-1/4"
+        />
 
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Buscar por título ou autor"
-        className="border border-gray-300 rounded p-2 mb-4 w-full max-w-md"
-      />
+        <select
+          value={filterStatus}
+          onChange={(e) => handleFilterStatus(e.target.value)}
+          className="border border-gray-300 rounded p-2 w-full md:w-1/4"
+        >
+          <option value="Todos">Todos</option>
+          <option value="Adiantado">Adiantado</option>
+          <option value="No prazo">No prazo</option>
+          <option value="Atrasado">Atrasado</option>
+        </select>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <div className="flex flex-col w-full md:w-1/4">
+          <label className="text-gray-700 mb-1">Data de Início (mínima)</label>
+          <input
+            type="date"
+            value={filterStartDate}
+            onChange={(e) => handleFilterStartDate(e.target.value)}
+            className="border border-gray-300 rounded p-2"
+          />
+        </div>
+        <div className="flex flex-col w-full md:w-1/4">
+          <label className="text-gray-700 mb-1">Data de Término (máxima)</label>
+          <input
+            type="date"
+            value={filterEndDate}
+            onChange={(e) => handleFilterEndDate(e.target.value)}
+            className="border border-gray-300 rounded p-2"
+          />
+        </div>
+      </div>
 
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
@@ -202,7 +263,7 @@ export default function ActivityTasksListPage() {
                 <td className={`p-2 border-b ${getStatusClass(status)}`}>{status}</td>
                 <td className="p-2 border-b">{task.time_spent_minutes ?? 0}</td>
                 <td className="p-2 border-b">R$ {parseFloat(task.cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                {isUserAdmin &&
+                {isUserAdmin && (
                   <td className="p-2 border-b">
                     <Link
                       to={`/tasks/${task.id}/documents`}
@@ -211,7 +272,7 @@ export default function ActivityTasksListPage() {
                       Documentos
                     </Link>
                   </td>
-                }
+                )}
                 <td className="p-2 border-b space-x-2">
                   <Link
                     to={`/tasks/${task.id}/view`}
@@ -219,7 +280,7 @@ export default function ActivityTasksListPage() {
                   >
                     Visualizar
                   </Link>
-                  {isUserAdmin && 
+                  {isUserAdmin && (
                     <>
                       <Link
                         to={`/tasks/${task.id}/edit`}
@@ -234,7 +295,7 @@ export default function ActivityTasksListPage() {
                         Excluir
                       </button>
                     </>
-                  }
+                  )}
                 </td>
               </tr>
             )
