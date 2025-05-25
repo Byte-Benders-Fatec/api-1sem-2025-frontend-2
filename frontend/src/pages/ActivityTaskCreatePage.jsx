@@ -13,6 +13,7 @@ export default function ActivityTaskCreatePage() {
   const [description, setDescription] = useState('')
   const [timeSpent, setTimeSpent] = useState('')
   const [cost, setCost] = useState('')
+  const [date, setDate] = useState(() => new Date().toLocaleDateString('en-CA'))
   const [userId, setUserId] = useState('')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [errorModalData, setErrorModalData] = useState({ isOpen: false, title: '', message: '' })
@@ -46,6 +47,7 @@ export default function ActivityTaskCreatePage() {
       activity_id: activityId,
       title,
       user_id: userId,
+      date,
       ...(description && { description }),
       ...(timeSpent && { time_spent_minutes: Number(timeSpent) }),
       ...(cost && { cost: parseFloat(cost) })
@@ -124,6 +126,17 @@ export default function ActivityTaskCreatePage() {
             value={cost}
             onChange={(e) => setCost(e.target.value)}
             min="0"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium text-gray-700">Data *</label>
+          <input
+            type="date"
+            className="w-full p-2 border rounded"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
           />
         </div>
 
