@@ -13,6 +13,7 @@ export default function TaskViewPage() {
   const [description, setDescription] = useState('')
   const [timeSpent, setTimeSpent] = useState('')
   const [cost, setCost] = useState('')
+  const [date, setDate] = useState('')
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function TaskViewPage() {
         setDescription(task.description || '')
         setTimeSpent(task.time_spent_minutes || '')
         setCost(task.cost || '')
+        setDate(task.date?.split('T')[0] || '')
         setActivities(activitiesRes.data)
       } catch (err) {
         console.error(err)
@@ -97,6 +99,16 @@ export default function TaskViewPage() {
             step="0.01"
             className="w-full p-2 border rounded bg-gray-100"
             value={cost}
+            readOnly
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium text-gray-700">Data *</label>
+          <input
+            type="date"
+            className="w-full p-2 border rounded bg-gray-100"
+            value={date}
             readOnly
           />
         </div>

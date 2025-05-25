@@ -14,6 +14,7 @@ export default function TaskEditPage() {
   const [description, setDescription] = useState('')
   const [timeSpent, setTimeSpent] = useState('')
   const [cost, setCost] = useState('')
+  const [date, setDate] = useState('')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [errorModalData, setErrorModalData] = useState({ isOpen: false, title: '', message: '' })
 
@@ -31,6 +32,7 @@ export default function TaskEditPage() {
         setDescription(task.description || '')
         setTimeSpent(task.time_spent_minutes || '')
         setCost(task.cost || '')
+        setDate(task.date?.split('T')[0] || '')
         setActivities(activitiesRes.data)
       } catch (err) {
         console.error(err)
@@ -53,7 +55,8 @@ export default function TaskEditPage() {
       title,
       description,
       time_spent_minutes: timeSpent || 0,
-      cost: cost || 0
+      cost: cost || 0,
+      date: date
     }
 
     try {
@@ -132,6 +135,17 @@ export default function TaskEditPage() {
             value={cost}
             onChange={(e) => setCost(e.target.value)}
             min="0"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium text-gray-700">Data *</label>
+          <input
+            type="date"
+            className="w-full p-2 border rounded"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
           />
         </div>
 
